@@ -1,3 +1,0 @@
-import {json,bodyJSON} from "../_shared.js";
-import {verify,unauthorized} from "./_auth.js";
-export async function onRequestPatch({request,env}){if(!await verify(request,env))return unauthorized();const d=await bodyJSON(request);const id=Number(d?.id);const allowed=["New","Contacted","Under review","Accepted","Waitlisted","Declined"];if(!Number.isInteger(id)||!allowed.includes(d?.status))return json({error:"Invalid application status."},400);try{await env.DB.prepare("UPDATE applications SET status=? WHERE id=?").bind(d.status,id).run();return json({ok:true})}catch(e){return json({error:"Could not update application status."},500)}}
