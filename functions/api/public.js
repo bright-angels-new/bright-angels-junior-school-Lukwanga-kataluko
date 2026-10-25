@@ -1,46 +1,44 @@
-export async function onRequestGet({ env }) {
-try {
-const settingsResult = await env.DB.prepare(
-"SELECT key, value FROM settings"
-).all();
+<script>
+document.addEventListener("DOMContentLoaded", async function () {
+  const menuBtn = document.getElementById("menuBtn");
+  const navLinks = document.getElementById("navLinks");
 
-const content = Object.fromEntries(
-  (settingsResult.results || []).map(row => [row.key, row.value])
-);
+  if (menuBtn && navLinks) {
+    menuBtn.addEventListener("click", function () {
+      const isOpen = navLinks.classList.toggle("open");
+      menuBtn.setAttribute("aria-expanded", String(isOpen));
+    });
 
-const newsResult = await env.DB.prepare(
-  "SELECT id, title, body, date AS event_date, created_at FROM announcements ORDER BY COALESCE(date, created_at) DESC, id DESC LIMIT 12"
-).all();
-
-return Response.json(
-  {
-    content,
-    announcements: newsResult.results || []
-  },
-  {
-    headers: {
-      "Content-Type": "application/json; charset=utf-8",
-      "Cache-Control": "no-store"
-    }
+    navLinks.querySelectorAll("a").forEach(function (link) {
+      link.addEventListener("click", function () {
+        navLinks.classList.remove("open");
+        menuBtn.setAttribute("aria-expanded", "false");
+      });
+    });
   }
-);
 
-} catch (error) {
-console.error("Public website data failed to load:", error);
+  try {
+    const response = await fetch("/api/public", {
+      cache: "no-store"
+    });
 
-return Response.json(
-  {
-    content: {},
-    announcements: []
-  },
-  {
-    status: 500,
-    headers: {
-      "Content-Type": "application/json; charset=utf-8",
-      "Cache-Control": "no-store"
+    if (!response.ok) return;
+
+    const data = await response.json();
+    const content = data.content || data.settings || data;
+
+    const welcome = document.getElementById("welcomeText");
+    const about = document.getElementById("aboutText");
+
+    if (welcome && content.welcome) {
+      welcome.textContent = content.welcome;
     }
-  }
-);
 
-}
-}
+    if (about && content.about) {
+      about.textContent = content.about;
+    }
+  } catch (error) {
+    console.error("Could not load school website text:", error);
+  }
+});
+</script>
