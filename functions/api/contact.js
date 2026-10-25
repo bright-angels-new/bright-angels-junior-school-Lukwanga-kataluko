@@ -1,4 +1,4 @@
-import {json,bodyJSON,clean,notifySchool} from "./_shared.js";
+import {json,bodyJSON,clean,notifySchool} from "../_shared.js";
 export async function onRequestPost({request,env}) {
  const d=await bodyJSON(request); if(!d)return json({error:"Please submit a valid message."},400);
  if(clean(d.website,200))return json({message:"Message received."},201);
