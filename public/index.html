@@ -86,3 +86,69 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 });
 </script>
+// Handle admission form submission and show a visible result.
+const admissionForm = document.getElementById("admissionForm");
+const admissionStatus = document.getElementById("admissionStatus");
+
+if (admissionForm && admissionStatus) {
+admissionForm.addEventListener("submit", async function (event) {
+event.preventDefault();
+
+const button = admissionForm.querySelector('button[type="submit"]');
+button.disabled = true;
+admissionStatus.className = "status";
+admissionStatus.textContent = "Submitting your application...";
+
+try {
+  const formData = new FormData(admissionForm);
+  const payload = Object.fromEntries(formData.entries());
+  const photo = admissionForm.querySelector('[name="passport"]').files[0];
+
+  if (photo) {
+    if (photo.size > 1024 * 1024) {
+      throw new Error("The photograph must be 1 MB or smaller.");
+    }
+
+    if (!["image/jpeg", "image/png", "image/webp"].includes(photo.type)) {
+      throw new Error("Please upload a JPG, PNG or WebP image.");
+    }
+
+    payload.passport_data_url = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error("Could not read the photograph."));
+      reader.readAsDataURL(photo);
+    });
+  }
+
+  delete payload.passport;
+  delete payload.consent;
+
+  const response = await fetch("/api/admissions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.error || "Your application could not be submitted.");
+  }
+
+  admissionStatus.className = "status ok";
+  admissionStatus.textContent =
+    (result.message || "Application submitted successfully.") +
+    (result.reference ? " Reference: " + result.reference : "");
+
+  admissionForm.reset();
+} catch (error) {
+  admissionStatus.className = "status err";
+  admissionStatus.textContent =
+    error.message || "Something went wrong. Please contact the school.";
+} finally {
+  button.disabled = false;
+}
+
+});
+}
