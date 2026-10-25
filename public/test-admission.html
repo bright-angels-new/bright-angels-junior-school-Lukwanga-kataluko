@@ -1,33 +1,28 @@
 <!doctype html>
+
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Admissions Diagnostic</title>
-  <style>
-    body { font-family: Arial, sans-serif; max-width: 600px; margin: 30px auto; padding: 16px; }
-    button { padding: 12px 18px; background: #173b91; color: white; border: 0; border-radius: 6px; }
-    pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #f2f2f2; padding: 12px; }
-  </style>
+  <title>Bright Angels Admissions Test</title>
 </head>
-<body>
+<body style="font-family:Arial,sans-serif;max-width:600px;margin:30px auto;padding:16px">
   <h2>Bright Angels Admissions Test</h2>
-  <p>This sends one application using fake test details.</p>
-  <button id="testButton">Run Test</button>
-  <pre id="result">Ready to test.</pre>
-
-  <script>
-    const button = document.getElementById("testButton");
-    const result = document.getElementById("result");
-
-    button.addEventListener("click", async () => {
+  <p>This sends one test application using fake details.</p>
+  <button id="testButton" type="button" style="padding:12px;background:#173b91;color:white;border:0">
+    Run Test
+  </button>
+  <pre id="result" style="white-space:pre-wrap;overflow-wrap:anywhere;background:#eee;padding:12px">Ready to test.</pre>  <script>
+    document.getElementById("testButton").addEventListener("click", async function () {
+      const button = this;
+      const result = document.getElementById("result");
       button.disabled = true;
       result.textContent = "Sending test application...";
 
       try {
         const response = await fetch("/api/admissions", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {"Content-Type": "application/json"},
           body: JSON.stringify({
             child_name: "Diagnostic Test Child",
             class_applying: "Primary 1",
@@ -45,9 +40,13 @@
         });
 
         const body = await response.text();
-        result.textContent =
-          "HTTP status: " + response.status +
+        result.textContent = "HTTP status: " + response.status +
           "\n\nServer response:\n" + body;
       } catch (error) {
-        result
-</script>
+        result.textContent = "Request failed: " + error.message;
+      } finally {
+        button.disabled = false;
+      }
+    });
+  </script></body>
+</html>
