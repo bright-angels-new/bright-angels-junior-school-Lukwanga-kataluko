@@ -1,10 +1,46 @@
 export async function onRequestGet({ env }) {
-  try {
-    const rows = await env.DB.prepare("SELECT key, value FROM content").all();
-    const content = Object.fromEntries((rows.results || []).map(r => [r.key, r.value]));
-    const news = await env.DB.prepare("SELECT id,title,body,event_date,created_at FROM announcements ORDER BY COALESCE(event_date, created_at) DESC, id DESC LIMIT 12").all();
-    return Response.json({ content, announcements: news.results || [] }, { headers: { "Cache-Control": "no-store" } });
-  } catch (e) {
-    return Response.json({ content: {}, announcements: [] });
+try {
+const settingsResult = await env.DB.prepare(
+"SELECT key, value FROM settings"
+).all();
+
+const content = Object.fromEntries(
+  (settingsResult.results || []).map(row => [row.key, row.value])
+);
+
+const newsResult = await env.DB.prepare(
+  "SELECT id, title, body, date AS event_date, created_at FROM announcements ORDER BY COALESCE(date, created_at) DESC, id DESC LIMIT 12"
+).all();
+
+return Response.json(
+  {
+    content,
+    announcements: newsResult.results || []
+  },
+  {
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "no-store"
+    }
   }
+);
+
+} catch (error) {
+console.error("Public website data failed to load:", error);
+
+return Response.json(
+  {
+    content: {},
+    announcements: []
+  },
+  {
+    status: 500,
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "no-store"
+    }
+  }
+);
+
+}
 }
