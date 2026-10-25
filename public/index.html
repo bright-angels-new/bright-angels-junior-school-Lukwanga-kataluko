@@ -137,9 +137,8 @@ try {
   }
 
   admissionStatus.className = "status ok";
-  admissionStatus.textContent =
-    (result.message || "Application submitted successfully.") +
-    (result.reference ? " Reference: " + result.reference : "");
+admissionStatus.textContent =
+    result.message || "Application submitted successfully.";
 
   admissionForm.reset();
 } catch (error) {
