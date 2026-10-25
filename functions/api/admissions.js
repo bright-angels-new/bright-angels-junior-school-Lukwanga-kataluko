@@ -53,7 +53,7 @@ parent,
 clean(d.relationship, 40) || null,
 phone,
 email || null,
-clean(d.district, 120) || null,
+clean(d.district, 120) || "Wakiso",
 clean(d.address, 240) || null,
 clean(d.medical_notes || d.notes, 1000) || null,
 ""
