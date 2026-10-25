@@ -11,126 +11,314 @@
 <div id="messages" class="panel tabPanel hidden"><h2>Parent messages & feedback</h2><button class="btn blue" id="refreshMessages">Refresh messages</button><div id="messagesList"></div></div>
 </section></main>
 <script>
-const $=s=>document.querySelector(s);let activeData={applications:[],messages:[],announcements:[],content:{}};
-async function api(url,opts={}){const r=await fetch(url,{...opts,headers:{'Content-Type':'application/json',...(opts.headers||{})}});let d={};try{d=await r.json()}catch(e){}if(!r.ok)throw new Error(d.error||'Request failed');return d}
-function status(el,msg,cls=''){el.textContent=msg;el.className='status '+cls}
-$('#loginForm').addEventListener('submit',async e=>{e.preventDefault();status($('#loginStatus'),'Signing in…');try{await api('/api/login',{method:'POST',body:JSON.stringify({email:$('#adminEmail').value,password:$('#adminPassword').value})});$('#loginPanel').classList.add('hidden');$('#dashboard').classList.remove('hidden');$('#logoutBtn').classList.remove('hidden');await loadAll()}catch(err){status($('#loginStatus'),err.message,'error')}});
-$('#logoutBtn').addEventListener('click',async()=>{try{await api('/api/logout',{method:'POST',body:'{}'})}catch(e){}location.reload()});
-document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.tabPanel').forEach(x=>x.classList.toggle('hidden',x.id!==b.dataset.tab))}));
-async function loadAll(){try{activeData=await api('/api/data');$('#summary').textContent=`${activeData.applications.length} admission application(s), ${activeData.messages.length} message(s), and ${activeData.announcements.length} announcement(s).`;$('#welcome').value=activeData.content.welcome||'';$('#about').value=activeData.content.about||'';renderApps();renderMessages();renderAnnouncements()}catch(e){alert(e.message)}}
-$('#contentForm').addEventListener('submit',async e=>{e.preventDefault();try{await api('/api/content',{method:'PUT',body:JSON.stringify({welcome:$('#welcome').value,about:$('#about').value})});status($('#contentStatus'),'Saved successfully.','ok')}catch(err){status($('#contentStatus'),err.message,'error')}});
-$('#announcementForm').addEventListener('submit', async e => {
-e.preventDefault();
+const $ = s => document.querySelector(s);
 
-const form = e.currentTarget;
-const formData = Object.fromEntries(new FormData(form));
+let activeData = {
+  applications: [],
+  messages: [],
+  announcements: [],
+  content: {}
+};
 
-try {
-await api('/api/announcements', {
-method: 'POST',
-body: JSON.stringify(formData)
+async function api(url, opts = {}) {
+  const response = await fetch(url, {
+    ...opts,
+    credentials: 'same-origin',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(opts.headers || {})
+    }
+  });
+
+  let data = {};
+  try {
+    data = await response.json();
+  } catch (e) {}
+
+  if (!response.ok) {
+    throw new Error(data.error || `Request failed (${response.status})`);
+  }
+
+  return data;
+}
+
+function status(element, message, cls = '') {
+  element.textContent = message;
+  element.className = 'status ' + cls;
+}
+
+function esc(value) {
+  return String(value ?? '').replace(/[&<>"']/g, character => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  })[character]);
+}
+
+/* ADMIN LOGIN */
+$('#loginForm').addEventListener('submit', async event => {
+  event.preventDefault();
+
+  const email = $('#adminEmail').value.trim();
+  const password = $('#adminPassword').value;
+
+  status($('#loginStatus'), 'Signing in…');
+
+  try {
+    await api('/api/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password })
+    });
+
+    $('#loginPanel').classList.add('hidden');
+    $('#dashboard').classList.remove('hidden');
+    $('#logoutBtn').classList.remove('hidden');
+
+    await loadAll();
+  } catch (error) {
+    status($('#loginStatus'), error.message, 'error');
+  }
 });
 
-form.reset();
-status($('#annStatus'), 'Published successfully.', 'ok');
-await loadAll();
+/* LOGOUT */
+$('#logoutBtn').addEventListener('click', async () => {
+  try {
+    await api('/api/logout', {
+      method: 'POST',
+      body: '{}'
+    });
+  } catch (error) {
+    console.error('Logout error:', error);
+  }
 
-} catch (err) {
-status($('#annStatus'), err.message, 'error');
-}
+  location.reload();
 });
-  async function deleteAnnouncement(id) {
-if (!confirm('Delete this announcement?')) return;
-try {
-await api('/api/announcements?id=' + id, { method: 'DELETE' });
-await loadAll();
-} catch (e) {
-alert(e.message);
-}
+
+/* DASHBOARD TABS */
+document.querySelectorAll('[data-tab]').forEach(button => {
+  button.addEventListener('click', () => {
+    document.querySelectorAll('[data-tab]').forEach(tab => {
+      tab.classList.toggle('active', tab === button);
+    });
+
+    document.querySelectorAll('.tabPanel').forEach(panel => {
+      panel.classList.toggle('hidden', panel.id !== button.dataset.tab);
+    });
+  });
+});
+
+/* LOAD DASHBOARD DATA */
+async function loadAll() {
+  try {
+    activeData = await api('/api/data');
+
+    $('#summary').textContent =
+      `${activeData.applications.length} admission application(s), ` +
+      `${activeData.messages.length} message(s), and ` +
+      `${activeData.announcements.length} announcement(s).`;
+
+    $('#welcome').value = activeData.content.welcome || '';
+    $('#about').value = activeData.content.about || '';
+
+    renderApps();
+    renderMessages();
+    renderAnnouncements();
+  } catch (error) {
+    console.error('Dashboard loading error:', error);
+    alert(error.message);
+  }
 }
 
-function esc(s) {
-return String(s ?? '').replace(/[&<>"']/g, c => ({
-'&': '&',
-'<': '<',
-'>': '>',
-'"': '"',
-"'": '''
-}[c]));
+/* SAVE WEBSITE TEXT */
+$('#contentForm').addEventListener('submit', async event => {
+  event.preventDefault();
+
+  try {
+    await api('/api/content', {
+      method: 'PUT',
+      body: JSON.stringify({
+        welcome: $('#welcome').value,
+        about: $('#about').value
+      })
+    });
+
+    status($('#contentStatus'), 'Website text saved successfully.', 'ok');
+  } catch (error) {
+    status($('#contentStatus'), error.message, 'error');
+  }
+});
+
+/* PUBLISH ANNOUNCEMENT */
+$('#announcementForm').addEventListener('submit', async event => {
+  event.preventDefault();
+
+  const form = event.currentTarget;
+  const formData = Object.fromEntries(new FormData(form));
+
+  try {
+    await api('/api/announcements', {
+      method: 'POST',
+      body: JSON.stringify(formData)
+    });
+
+    form.reset();
+    status($('#annStatus'), 'Published successfully.', 'ok');
+    await loadAll();
+  } catch (error) {
+    status($('#annStatus'), error.message, 'error');
+  }
+});
+
+/* DELETE ANNOUNCEMENT */
+async function deleteAnnouncement(id) {
+  if (!confirm('Delete this announcement?')) return;
+
+  try {
+    await api('/api/announcements?id=' + encodeURIComponent(id), {
+      method: 'DELETE'
+    });
+
+    await loadAll();
+  } catch (error) {
+    alert(error.message);
+  }
 }
 
+/* DISPLAY ANNOUNCEMENTS */
 function renderAnnouncements() {
-$('#annList').innerHTML = activeData.announcements.map(a =>
-"<div class="item"> <div class="row" style="justify-content:space-between"> <h3>${esc(a.title)}</h3> <button class="btn" onclick="deleteAnnouncement(${a.id})">Delete</button> </div> <p>${esc(a.body)}</p> <small>${esc(a.event_date || a.created_at)}</small> </div>"
-).join('') || '<p class="muted">No announcements yet.</p>';
+  const announcements = activeData.announcements || [];
+
+  $('#annList').innerHTML = announcements.map(item => `
+    <div class="item">
+      <div class="row" style="justify-content:space-between">
+        <h3>${esc(item.title)}</h3>
+        <button class="btn" onclick="deleteAnnouncement(${Number(item.id)})">
+          Delete
+        </button>
+      </div>
+      <p>${esc(item.body)}</p>
+      <small>${esc(item.event_date || item.created_at)}</small>
+    </div>
+  `).join('') || '<p class="muted">No announcements yet.</p>';
 }
 
+/* DISPLAY ADMISSIONS */
 function renderApps() {
-const list = activeData.applications;
-$('#appsList').innerHTML = list.length ? "<table> <thead><tr><th>Received</th><th>Child / class</th><th>Parent / contact</th><th>Status</th><th>Photo</th></tr></thead> <tbody>${list.map(a => "<tr>
-<td>${esc(a.created_at)}<br><small>${esc(a.reference)}</small></td>
-<td><strong>${esc(a.child_name)}</strong><br>${esc(a.class_applied)}<br>
-<small>DOB: ${esc(a.date_of_birth || 'Not given')}</small><br>
-<small>Previous school: ${esc(a.previous_school || 'Not given')}</small></td>
-<td>${esc(a.parent_name)} (${esc(a.relationship || 'not stated')})<br>
-${esc(a.phone)}<br>${esc(a.email || '')}</td>
-<td>${esc(a.status || 'New')}</td>
-<td>${a.passport_data_url ? "<a href="${esc(a.passport_data_url)}" target="_blank" rel="noopener">View photo</a>" : 'None'}</td>
-</tr>").join('')}</tbody></table>" : '<p class="muted">No applications received yet.</p>';
+  const applications = activeData.applications || [];
+
+  if (!applications.length) {
+    $('#appsList').innerHTML =
+      '<p class="muted">No applications received yet.</p>';
+    return;
+  }
+
+  $('#appsList').innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Received</th>
+          <th>Child / Class</th>
+          <th>Parent / Contact</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${applications.map(application => `
+          <tr>
+            <td>
+              ${esc(application.created_at)}
+              <br><small>${esc(application.reference)}</small>
+            </td>
+            <td>
+              <strong>${esc(application.child_name)}</strong><br>
+              ${esc(application.class_applied)}<br>
+              <small>DOB: ${esc(application.date_of_birth || 'Not given')}</small><br>
+              <small>Previous school: ${esc(application.previous_school || 'Not given')}</small>
+            </td>
+            <td>
+              ${esc(application.parent_name)}
+              (${esc(application.relationship || 'Not stated')})<br>
+              ${esc(application.phone)}<br>
+              ${esc(application.email || '')}
+            </td>
+            <td>${esc(application.status || 'New')}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
 }
 
+/* DISPLAY PARENT FEEDBACK */
 function renderMessages() {
-$('#messagesList').innerHTML = activeData.messages.map(m =>
-"<div class="item"> <div class="row" style="justify-content:space-between"> <h3>${esc(m.subject || 'Message')}</h3> <span class="muted">${esc(m.created_at)}</span> </div> <p>${esc(m.message)}</p> <p><strong>${esc(m.name)}</strong> · ${esc(m.email || 'No email')} · ${esc(m.phone || 'No phone')}</p> </div>"
-).join('') || '<p class="muted">No messages received yet.</p>';
+  const messages = activeData.messages || [];
+
+  $('#messagesList').innerHTML = messages.map(message => `
+    <div class="item">
+      <div class="row" style="justify-content:space-between">
+        <h3>${esc(message.subject || 'Parent feedback')}</h3>
+        <span class="muted">${esc(message.created_at)}</span>
+      </div>
+      <p>${esc(message.message)}</p>
+      <p>
+        <strong>${esc(message.name || 'Parent')}</strong>
+        · ${esc(message.email || 'No email')}
+        · ${esc(message.phone || 'No phone')}
+      </p>
+    </div>
+  `).join('') || '<p class="muted">No messages received yet.</p>';
 }
 
-async function updateApp(id, statusValue) {
-try {
-await api('/api/application-status', {
-method: 'PATCH',
-body: JSON.stringify({ id, status: statusValue })
-});
-const app = activeData.applications.find(a => a.id === id);
-if (app) app.status = statusValue;
-} catch (e) {
-alert(e.message);
-}
-}
-
+/* REFRESH BUTTONS */
 $('#refreshApps').addEventListener('click', loadAll);
 $('#refreshMessages').addEventListener('click', loadAll);
 
+/* EXPORT ADMISSIONS */
 $('#exportApps').addEventListener('click', () => {
-const cols = [
-'reference', 'created_at', 'child_name', 'date_of_birth',
-'gender', 'class_applied', 'previous_school', 'parent_name',
-'relationship', 'phone', 'email', 'address', 'medical_notes', 'status'
-];
-const csv = [
-cols.join(','),
-...activeData.applications.map(r =>
-cols.map(c => '"' + String(r[c] ?? '').replace(/"/g, '""') + '"').join(',')
-)
-].join('\r\n');
+  const columns = [
+    'reference', 'created_at', 'child_name', 'date_of_birth',
+    'gender', 'class_applied', 'previous_school', 'parent_name',
+    'relationship', 'phone', 'email', 'address', 'medical_notes',
+    'status'
+  ];
 
-const a = document.createElement('a');
-a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-a.download = 'bright-angels-admissions.csv';
-a.click();
-URL.revokeObjectURL(a.href);
+  const rows = [
+    columns.join(','),
+    ...activeData.applications.map(application =>
+      columns.map(column =>
+        '"' + String(application[column] ?? '').replace(/"/g, '""') + '"'
+      ).join(',')
+    )
+  ];
+
+  const blob = new Blob([rows.join('\r\n')], {
+    type: 'text/csv;charset=utf-8;'
+  });
+
+  const downloadUrl = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+
+  link.href = downloadUrl;
+  link.download = 'bright-angels-admissions.csv';
+  link.click();
+
+  URL.revokeObjectURL(downloadUrl);
 });
 
+/* RESTORE SESSION IF ALREADY SIGNED IN */
 (async () => {
-try {
-await api('/api/data');
-$('#loginPanel').classList.add('hidden');
-$('#dashboard').classList.remove('hidden');
-$('#logoutBtn').classList.remove('hidden');
-await loadAll();
-} catch (e) {}
-})();
-</script>
+  try {
+    await api('/api/data');
 
-</body>
-</html>
+    $('#loginPanel').classList.add('hidden');
+    $('#dashboard').classList.remove('hidden');
+    $('#logoutBtn').classList.remove('hidden');
+
+    await loadAll();
+  } catch (error) {
+    // No active session: leave the login form visible.
+  }
+})();
+          </script>
