@@ -1,4 +1,4 @@
-import {json,bodyJSON,clean,notifySchool} from "./_shared.js";
+import {json,bodyJSON,clean,notifySchool} from "../_shared.js";
 function validEmail(s){return !s || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s)}
 export async function onRequestPost({request,env}) {
   const d=await bodyJSON(request);
