@@ -22,7 +22,7 @@ return json({ ok: true }, 201);
 
 } catch (error) {
 console.error("Publishing announcement failed:", error);
-return json({ error: "Could not publish announcement." }, 500);
+return json({error:"Could not publish announcement: "+String(e.message||e)},500)
 }
 }
 
