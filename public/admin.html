@@ -19,14 +19,23 @@ $('#logoutBtn').addEventListener('click',async()=>{try{await api('/api/logout',{
 document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.tabPanel').forEach(x=>x.classList.toggle('hidden',x.id!==b.dataset.tab))}));
 async function loadAll(){try{activeData=await api('/api/data');$('#summary').textContent=`${activeData.applications.length} admission application(s), ${activeData.messages.length} message(s), and ${activeData.announcements.length} announcement(s).`;$('#welcome').value=activeData.content.welcome||'';$('#about').value=activeData.content.about||'';renderApps();renderMessages();renderAnnouncements()}catch(e){alert(e.message)}}
 $('#contentForm').addEventListener('submit',async e=>{e.preventDefault();try{await api('/api/content',{method:'PUT',body:JSON.stringify({welcome:$('#welcome').value,about:$('#about').value})});status($('#contentStatus'),'Saved successfully.','ok')}catch(err){status($('#contentStatus'),err.message,'error')}});
-$('#announcementForm').addEventListener('submit',async e=>{e.preventDefault();try{await api('/api/announcements',{method:'POST',body:JSON.stringify(Object.fromEntries(new FormData(e.currentTarget)))});e.currentTarget.reset();status($('#annStatus'),'Published.','ok');await loadAll()}catch(err){status($('#annStatus'),err.message,'error')}});
-async function deleteAnnouncement(id){if(!confirm('Delete this announcement?'))return;try{await api('/api/announcements?id='+id,{method:'DELETE'});await loadAll()}catch(e){alert(e.message)}}
-function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function renderAnnouncements(){$('#annList').innerHTML=activeData.announcements.map(a=>`<div class="item"><div class="row" style="justify-content:space-between"><h3>${esc(a.title)}</h3><button class="btn" onclick="deleteAnnouncement(${a.id})">Delete</button></div><p>${esc(a.body)}</p><small>${esc(a.event_date||a.created_at)}</small></div>`).join('')||'<p class="muted">No announcements yet.</p>'}
-function renderApps(){const list=activeData.applications;$('#appsList').innerHTML=list.length?`<table><thead><tr><th>Received</th><th>Child / class</th><th>Parent / contact</th><th>Status</th><th>Photo</th></tr></thead><tbody>${list.map(a=>`<tr><td>${esc(a.created_at)}<br><small>${esc(a.reference)}</small></td><td><strong>${esc(a.child_name)}</strong><br>${esc(a.class_applied)}<br><small>DOB: ${esc(a.date_of_birth||'Not given')}</small><br><small>Previous school: ${esc(a.previous_school||'Not given')}</small></td><td>${esc(a.parent_name)} (${esc(a.relationship||'not stated')})<br>${esc(a.phone)}<br>${esc(a.email||'')}</td><td><select aria-label="Application status" onchange="updateApp(${a.id},this.value)">${['New','Contacted','Under review','Accepted','Waitlisted','Declined'].map(s=>`<option ${a.status===s?'selected':''}>${s}</option>`).join('')}</select></td><td>${a.passport_data_url?`<a href="${a.passport_data_url}" target="_blank" rel="noopener">View photo</a>`:'None'}</td></tr>`).join('')}</tbody></table>`:'<p class="muted">No applications received yet.</p>'}
-async function updateApp(id,status){try{await api('/api/application-status',{method:'PATCH',body:JSON.stringify({id,status})});const a=activeData.applications.find(x=>x.id===id);if(a)a.status=status}catch(e){alert(e.message)}}
-function renderMessages(){$('#messagesList').innerHTML=activeData.messages.map(m=>`<div class="item"><div class="row" style="justify-content:space-between"><h3>${esc(m.subject||'Message')}</h3><span class="muted">${esc(m.created_at)}</span></div><p>${esc(m.message)}</p><p><strong>${esc(m.name)}</strong> · ${esc(m.email||'No email')} · ${esc(m.phone||'No phone')}</p></div>`).join('')||'<p class="muted">No messages received yet.</p>'}
-$('#refreshApps').addEventListener('click',loadAll);$('#refreshMessages').addEventListener('click',loadAll);
-$('#exportApps').addEventListener('click',()=>{const rows=activeData.applications;const cols=['reference','created_at','child_name','date_of_birth','gender','class_applied','previous_school','parent_name','relationship','phone','email','address','medical_notes','status'];const csv=[cols.join(','),...rows.map(r=>cols.map(c=>'"'+String(r[c]??'').replace(/"/g,'""')+'"').join(','))].join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='bright-angels-admissions.csv';a.click();URL.revokeObjectURL(a.href)});
-(async()=>{try{await api('/api/data');$('#loginPanel').classList.add('hidden');$('#dashboard').classList.remove('hidden');$('#logoutBtn').classList.remove('hidden');await loadAll()}catch(e){}})();
-</script></body></html>
+$('#announcementForm').addEventListener('submit', async e => {
+e.preventDefault();
+
+const form = e.currentTarget;
+const formData = Object.fromEntries(new FormData(form));
+
+try {
+await api('/api/announcements', {
+method: 'POST',
+body: JSON.stringify(formData)
+});
+
+form.reset();
+status($('#annStatus'), 'Published successfully.', 'ok');
+await loadAll();
+
+} catch (err) {
+status($('#annStatus'), err.message, 'error');
+}
+});
