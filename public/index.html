@@ -133,7 +133,7 @@ try {
   const result = await response.json();
 
   if (!response.ok) {
-    throw new Error(result.error || "Your application could not be submitted.");
+    throw new Error(result.error || result.message || ("Request failed with HTTP " + response.status));
   }
 
   admissionStatus.className = "status ok";
