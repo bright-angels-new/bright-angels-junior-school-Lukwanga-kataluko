@@ -1,0 +1,12 @@
+name = "bright-angels-junior-school"
+compatibility_date = "2026-10-24"
+pages_build_output_dir = "./public"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "bright-angels-junior-school-db"
+database_id = "137647d1-a64a-4cc0-b3ba-027a9199f7d3"
+
+[vars]
+SCHOOL_EMAIL = "brightangels26@gmail.com"
+SCHOOL_NAME = "Bright Angels Junior School"
