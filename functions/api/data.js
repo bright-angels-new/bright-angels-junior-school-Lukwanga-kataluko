@@ -8,16 +8,13 @@ export async function onRequestGet({ request, env }) {
     const [apps, feedback, news, settings] = await Promise.all([
       env.DB.prepare(`
         SELECT
-          id,
-          reference,
-          child_name,
+          id, reference, child_name,
           dob AS date_of_birth,
           gender,
           class_applying AS class_applied,
           previous_school,
           guardian_name AS parent_name,
-          relationship,
-          phone,
+          relationship, phone,
           guardian_email AS email,
           address,
           notes AS medical_notes,
@@ -33,8 +30,7 @@ export async function onRequestGet({ request, env }) {
         SELECT
           id,
           parent_name AS name,
-          email,
-          phone,
+          email, phone,
           'Parent feedback' AS subject,
           message,
           'New' AS status,
@@ -45,32 +41,32 @@ export async function onRequestGet({ request, env }) {
       `).all(),
 
       env.DB.prepare(`
-        SELECT id, title, body, event_date, created_at
+        SELECT
+          id, title, body,
+          date AS event_date,
+          created_at
         FROM announcements
         ORDER BY id DESC
         LIMIT 100
       `).all(),
 
       env.DB.prepare(`
-        SELECT key, value
-        FROM settings
+        SELECT key, value FROM settings
       `).all()
     ]);
-
-    const content = Object.fromEntries(
-      (settings.results || []).map(item => [item.key, item.value])
-    );
 
     return json({
       applications: apps.results || [],
       messages: feedback.results || [],
       announcements: news.results || [],
-      content
+      content: Object.fromEntries(
+        (settings.results || []).map(row => [row.key, row.value])
+      )
     });
   } catch (error) {
     console.error("Dashboard data loading failed:", error);
     return json({
-      error: "Could not load dashboard data. Please check the database table definitions."
+      error: "Dashboard data could not be loaded. Please check the Cloudflare function logs."
     }, 500);
   }
 }
