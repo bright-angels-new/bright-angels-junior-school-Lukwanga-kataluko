@@ -432,7 +432,89 @@ $('#exportApps').addEventListener('click', () => {
 
   URL.revokeObjectURL(downloadUrl);
 });
+/* STUDENT REGISTRATION */
+async function loadStudents() {
+  const list = $('#studentsList');
+  list.textContent = 'Loading students...';
 
+  try {
+    const data = await api('/api/students');
+    const students = data.students || [];
+
+    list.innerHTML = students.length
+      ? `<table>
+          <thead>
+            <tr>
+              <th>Admission No.</th>
+              <th>Name</th>
+              <th>Class</th>
+              <th>Parent</th>
+              <th>Phone</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${students.map(s => `
+              <tr>
+                <td>${esc(s.admission_number)}</td>
+                <td>${esc(s.full_name)}</td>
+                <td>${esc(s.class_name)}</td>
+                <td>${esc(s.parent_name)}</td>
+                <td>${esc(s.parent_phone)}</td>
+                <td>${esc(s.status)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>`
+      : '<p class="muted">No students registered yet.</p>';
+
+  } catch (error) {
+    list.textContent = 'Could not load students: ' + error.message;
+  }
+}
+
+$('#studentForm').addEventListener('submit', async event => {
+  event.preventDefault();
+
+  const student = {
+    admission_number: $('#studentAdmission').value.trim(),
+    full_name: $('#studentName').value.trim(),
+    date_of_birth: $('#studentDOB').value,
+    gender: $('#studentGender').value,
+    class_name: $('#studentClass').value,
+    parent_name: $('#studentParent').value.trim(),
+    parent_phone: $('#studentPhone').value.trim(),
+    parent_email: $('#studentEmail').value.trim(),
+    address: $('#studentAddress').value.trim(),
+    enrollment_date: $('#studentEnrollment').value
+  };
+
+  status($('#studentStatus'), 'Saving student...');
+
+  try {
+    const result = await api('/api/students', {
+      method: 'POST',
+      body: JSON.stringify(student)
+    });
+
+    status(
+      $('#studentStatus'),
+      result.message || 'Student registered successfully.',
+      'ok'
+    );
+
+    $('#studentForm').reset();
+    await loadStudents();
+
+  } catch (error) {
+    status($('#studentStatus'), error.message, 'error');
+  }
+});
+
+$('#refreshStudents').addEventListener('click', loadStudents);
+
+document.querySelector('[data-tab="students"]')
+  .addEventListener('click', loadStudents);
 /* RESTORE SESSION IF ALREADY SIGNED IN */
 (async () => {
   try {
