@@ -70,7 +70,34 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     const data = await response.json();
     const content = data.content || data.settings || data;
+// Display announcements published by the administrator
+const newsGrid = document.getElementById("newsGrid");
+const announcements = Array.isArray(data.announcements)
+  ? data.announcements
+  : [];
 
+if (newsGrid && announcements.length > 0) {
+  newsGrid.replaceChildren();
+
+  announcements.forEach(function (item) {
+    const card = document.createElement("article");
+    card.className = "newsCard";
+
+    const date = document.createElement("time");
+    date.textContent = item.event_date
+      ? new Date(item.event_date + "T00:00:00").toLocaleDateString()
+      : "School announcement";
+
+    const title = document.createElement("h3");
+    title.textContent = item.title || "School announcement";
+
+    const body = document.createElement("p");
+    body.textContent = item.body || "";
+
+    card.append(date, title, body);
+    newsGrid.appendChild(card);
+  });
+                             }
     const welcome = document.getElementById("welcomeText");
     const about = document.getElementById("aboutText");
 
