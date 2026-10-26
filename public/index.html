@@ -178,6 +178,51 @@ admissionStatus.textContent =
 
 });
 }
+// Handle parent feedback and contact messages
+const contactForm = document.getElementById("contactForm");
+const contactStatus = document.getElementById("contactStatus");
+
+if (contactForm && contactStatus) {
+  contactForm.addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    const button = contactForm.querySelector('button[type="submit"]');
+    button.disabled = true;
+    contactStatus.className = "status";
+    contactStatus.textContent = "Sending your message...";
+
+    try {
+      const payload = Object.fromEntries(new FormData(contactForm).entries());
+
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result.error || result.message ||
+          ("Request failed with HTTP " + response.status)
+        );
+      }
+
+      contactStatus.className = "status ok";
+      contactStatus.textContent =
+        result.message || "Your message has been received.";
+
+      contactForm.reset();
+    } catch (error) {
+      contactStatus.className = "status err";
+      contactStatus.textContent =
+        error.message || "Could not send your message. Please try again.";
+    } finally {
+      button.disabled = false;
+    }
+  });
+}
 </script>
 </body>
 </html>
