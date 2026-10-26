@@ -14,7 +14,64 @@
 <div id="content" class="panel tabPanel hidden"><h2>Edit homepage content</h2><p class="muted">Edit the welcome text and school introduction. Changes appear on the public website after saving.</p><form id="contentForm"><div class="field"><label for="welcome">Homepage welcome text</label><textarea id="welcome" name="welcome" maxlength="800" required></textarea></div><div class="field"><label for="about">About the school</label><textarea id="about" name="about" maxlength="2500" required></textarea></div><button class="btn blue" type="submit">Save website text</button> <span id="contentStatus" class="status"></span></form></div>
 <div id="announcements" class="panel tabPanel hidden"><h2>News & events</h2><form id="announcementForm"><div class="grid"><div class="field"><label for="annTitle">Title</label><input id="annTitle" name="title" required maxlength="160"></div><div class="field"><label for="annDate">Event date (optional)</label><input id="annDate" name="event_date" type="date"></div><div class="field" style="grid-column:1/-1"><label for="annBody">Announcement</label><textarea id="annBody" name="body" required maxlength="3000"></textarea></div></div><button class="btn blue" type="submit">Publish announcement</button> <span id="annStatus" class="status"></span></form><div id="annList"></div></div>
 <div id="applications" class="panel tabPanel hidden"><h2>Admission applications</h2><p class="muted">Personal information about children should be handled confidentially. Downloaded records must be kept secure.</p><div class="row"><button class="btn blue" id="refreshApps">Refresh applications</button><button class="btn" id="exportApps">Export CSV</button></div><div id="appsList" class="tablewrap" style="margin-top:14px"></div></div>
-<div id="messages" class="panel tabPanel hidden"><h2>Parent messages & feedback</h2><button class="btn blue" id="refreshMessages">Refresh messages</button><div id="messagesList"></div></div>
+<div id="students" class="panel tabPanel hidden">
+  <h2>Student Management</h2>
+  <p class="muted">Register pupils and manage their school records.</p>
+
+  <form id="studentForm">
+    <div class="grid">
+      <div class="field">
+        <label for="studentAdmission">Admission Number *</label>
+        <input id="studentAdmission" required maxlength="50">
+      </div>
+
+      <div class="field">
+        <label for="studentName">Full Name *</label>
+        <input id="studentName" required maxlength="200">
+      </div>
+
+      <div class="field">
+        <label for="studentDOB">Date of Birth</label>
+        <input id="studentDOB" type="date">
+      </div>
+
+      <div class="field">
+        <label for="studentGender">Gender</label>
+        <select id="studentGender">
+          <option value="">Select gender</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="studentClass">Class *</label>
+        <select id="studentClass" required>
+          <option value="">Select class</option>
+          <option>Baby Class</option>
+          <option>Middle Class</option>
+          <option>Top Class</option>
+          <option>P1</option>
+          <option>P2</option>
+          <option>P3</option>
+          <option>P4</option>
+          <option>P5</option>
+          <option>P6</option>
+          <option>P7</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="studentParent">Parent/Guardian Name *</label>
+        <input id="studentParent" required maxlength="200">
+      </div>
+
+      <div class="field">
+        <label for="studentPhone">Parent Phone *</label>
+        <input id="studentPhone" type="tel" required maxlength="40">
+      </div>
+
+      <div<h2>Parent messages & feedback</h2><button class="btn blue" id="refreshMessages">Refresh messages</button><div id="messagesList"></div></div>
 </section></main>
 <script>
 const $ = s => document.querySelector(s);
