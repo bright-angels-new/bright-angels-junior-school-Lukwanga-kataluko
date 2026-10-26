@@ -134,6 +134,22 @@
   </div>
   <div id="studentsList" class="tablewrap"></div>
     </div>  
+ <div id="subjects" class="panel tabPanel hidden">
+  <h2>Subject Management</h2>
+  <p class="muted">Add and manage school subjects.</p>
+
+  <form id="subjectForm">
+    <div class="field">
+      <label for="subjectName">Subject Name *</label>
+      <input id="subjectName" type="text" required>
+    </div>
+    <button class="btn blue" type="submit">Add Subject</button>
+    <span id="subjectStatus" class="muted"></span>
+  </form>
+
+  <h3>Available Subjects</h3>
+  <div id="subjectsList"></div>
+ </div>
       <div id="messages" class="panel tabPanel hidden"><h2>Parent messages & feedback</h2><button class="btn blue" id="refreshMessages">Refresh messages</button><div id="messagesList"></div></div>
 </section></main>
 <script>
@@ -515,7 +531,57 @@ $('#refreshStudents').addEventListener('click', loadStudents);
 
 document.querySelector('[data-tab="students"]')
   .addEventListener('click', loadStudents);
-/* RESTORE SESSION IF ALREADY SIGNED IN */
+/* SUBJECT MANAGEMENT */
+async function loadSubjects() {
+const list = $('#subjectsList');
+list.textContent = 'Loading subjects...';
+
+try {
+const data = await api('/api/subjects');
+const subjects = data.subjects || [];
+
+list.innerHTML = subjects.length
+  ? `<ul>${subjects.map(s =>
+      `<li>${esc(s.subject_name)}</li>`
+    ).join('')}</ul>`
+  : '<p class="muted">No subjects added yet.</p>';
+
+} catch (error) {
+list.textContent = 'Could not load subjects: ' + error.message;
+}
+}
+
+$('#subjectForm').addEventListener('submit', async event => {
+event.preventDefault();
+
+const subjectName = $('#subjectName').value.trim();
+if (!subjectName) return;
+
+status($('#subjectStatus'), 'Saving subject...');
+
+try {
+const result = await api('/api/subjects', {
+method: 'POST',
+body: JSON.stringify({ subject_name: subjectName })
+});
+
+status(
+  $('#subjectStatus'),
+  result.message || 'Subject added successfully.',
+  'ok'
+);
+
+$('#subjectForm').reset();
+await loadSubjects();
+
+} catch (error) {
+status($('#subjectStatus'), error.message, 'error');
+}
+});
+
+document.querySelector('[data-tab="subjects"]')
+.addEventListener('click', loadSubjects);
+  /* RESTORE SESSION IF ALREADY SIGNED IN */
 (async () => {
   try {
     await api('/api/data');
