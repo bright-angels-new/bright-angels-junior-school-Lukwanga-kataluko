@@ -1,767 +1,1418 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#176b45">
-  <title>Admin Dashboard | Bright Angels Junior School</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bright Angels Junior School | Admin</title>
 
-  <style>
-    :root {
-      --green: #176b45;
-      --green-dark: #105334;
-      --green-light: #edf5ef;
-      --gold: #e7b64b;
-      --text: #24312a;
-      --muted: #68766e;
-      --border: #dce5df;
-      --background: #f4f7f5;
-      --white: #fff;
-      --red: #b42318;
-    }
+<style>
+:root {
+  --navy:#12345a;
+  --blue:#1769aa;
+  --gold:#f2b632;
+  --bg:#f3f6fb;
+  --white:#fff;
+  --text:#243247;
+  --muted:#68778b;
+  --border:#dce4ee;
+  --red:#c62828;
+  --green:#177245;
+}
 
-    * {
-      box-sizing: border-box;
-    }
+* { box-sizing:border-box }
 
-    body {
-      margin: 0;
-      background: var(--background);
-      color: var(--text);
-      font-family: Arial, Helvetica, sans-serif;
-      line-height: 1.5;
-    }
+body {
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
 
-    button,
-    input,
-    select,
-    textarea {
-      font: inherit;
-    }
+button,input,select,textarea { font:inherit }
+button { cursor:pointer }
 
-    button {
-      cursor: pointer;
-    }
+.hidden { display:none!important }
 
-    .hidden {
-      display: none !important;
-    }
+header {
+  background:var(--navy);
+  color:white;
+  padding:16px 20px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
+}
 
-    .topbar {
-      background: var(--green);
-      color: white;
-      padding: 16px 20px;
-    }
+.brand {
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
 
-    .topbar-inner {
-      max-width: 1250px;
-      margin: auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 15px;
-      flex-wrap: wrap;
-    }
+.brand img {
+  width:48px;
+  height:48px;
+  object-fit:contain;
+  background:white;
+  border-radius:8px;
+  padding:3px;
+}
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+.brand h1 {
+  margin:0;
+  font-size:18px;
+}
 
-    .brand img {
-      width: 54px;
-      height: 54px;
-      object-fit: contain;
-      background: white;
-      border-radius: 8px;
-      padding: 3px;
-    }
+.brand p {
+  margin:5px 0 0;
+  font-size:12px;
+  color:#e0eaf5;
+}
 
-    .brand h1 {
-      margin: 0;
-      font-size: 19px;
-    }
+button,.button {
+  border:0;
+  border-radius:7px;
+  padding:11px 15px;
+  background:var(--blue);
+  color:white;
+  font-weight:bold;
+}
 
-    .brand p {
-      margin: 3px 0 0;
-      font-size: 12px;
-      opacity: .9;
-    }
+button.secondary {
+  background:#e6edf6;
+  color:var(--navy);
+}
 
-    .container {
-      max-width: 1250px;
-      margin: 24px auto;
-      padding: 0 16px 35px;
-    }
+button.danger { background:var(--red) }
 
-    .card {
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 7px rgba(0, 0, 0, .035);
-      min-width: 0;
-    }
+button.gold {
+  background:var(--gold);
+  color:#17263a;
+}
 
-    .card h2 {
-      margin: 0 0 16px;
-      font-size: 19px;
-      color: var(--green-dark);
-    }
+button:disabled {
+  opacity:.5;
+  cursor:not-allowed;
+}
 
-    .card h3 {
-      margin-top: 0;
-    }
+main {
+  max-width:1450px;
+  margin:auto;
+  padding:20px;
+}
 
-    .login-card {
-      max-width: 460px;
-      margin: 35px auto;
-    }
+.login-wrap {
+  max-width:420px;
+  margin:50px auto;
+  background:white;
+  padding:25px;
+  border-radius:14px;
+  box-shadow:0 5px 25px #102d4b12;
+}
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 16px;
-    }
+h2 { margin-top:0 }
 
-    .field {
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
+label {
+  display:block;
+  font-size:13px;
+  font-weight:bold;
+  margin:12px 0 6px;
+}
 
-    .field.full {
-      grid-column: 1 / -1;
-    }
+input,select,textarea {
+  width:100%;
+  padding:11px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:white;
+  color:var(--text);
+}
 
-    label {
-      font-size: 14px;
-      font-weight: 700;
-    }
+textarea {
+  min-height:100px;
+  resize:vertical;
+}
 
-    input,
-    select,
-    textarea {
-      width: 100%;
-      min-width: 0;
-      padding: 11px 12px;
-      border: 1px solid #cbd7ce;
-      border-radius: 7px;
-      background: white;
-      color: var(--text);
-    }
+.form-grid {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
 
-    textarea {
-      min-height: 100px;
-      resize: vertical;
-    }
+.form-grid .full { grid-column:1/-1 }
 
-    input:focus,
-    select:focus,
-    textarea:focus {
-      outline: 2px solid #9ac8ad;
-      border-color: var(--green);
-    }
+.notice {
+  padding:12px;
+  border-radius:7px;
+  margin:12px 0;
+  background:#e9f2ff;
+  color:#174b80;
+  overflow-wrap:anywhere;
+}
 
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      min-height: 42px;
-      padding: 9px 14px;
-      border: 1px solid #cbd7ce;
-      border-radius: 7px;
-      background: white;
-      color: var(--text);
-      text-decoration: none;
-      font-weight: 700;
-    }
+.notice.error {
+  background:#ffebee;
+  color:#a51d2a;
+}
 
-    .btn.primary {
-      color: white;
-      background: var(--green);
-      border-color: var(--green);
-    }
+.notice.success {
+  background:#e8f5e9;
+  color:#176337;
+}
 
-    .btn.primary:hover {
-      background: var(--green-dark);
-    }
+nav {
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-bottom:18px;
+}
 
-    .btn.danger {
-      color: white;
-      background: var(--red);
-      border-color: var(--red);
-    }
+nav button {
+  background:white;
+  color:var(--navy);
+  border:1px solid var(--border);
+}
 
-    .btn.small {
-      min-height: 34px;
-      padding: 6px 9px;
-      font-size: 12px;
-    }
+nav button.active {
+  background:var(--navy);
+  color:white;
+}
 
-    .form-actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
+.panel {
+  background:white;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:18px;
+  margin-bottom:18px;
+  min-width:0;
+}
 
-    .notice {
-      margin-top: 12px;
-      padding: 10px 12px;
-      border-radius: 7px;
-      overflow-wrap: anywhere;
-      font-size: 14px;
-    }
+.cards {
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:14px;
+  margin-bottom:18px;
+}
 
-    .notice.ok {
-      color: #155b35;
-      background: #e7f6eb;
-    }
+.stat {
+  background:white;
+  border:1px solid var(--border);
+  padding:18px;
+  border-radius:12px;
+}
 
-    .notice.error {
-      color: #8b1b14;
-      background: #fff0ee;
-    }
+.stat span {
+  color:var(--muted);
+  font-size:13px;
+}
 
-    .notice.info {
-      color: #164f77;
-      background: #edf6ff;
-    }
+.stat strong {
+  display:block;
+  font-size:27px;
+  margin-top:9px;
+  overflow-wrap:anywhere;
+}
 
-    .small-note {
-      color: var(--muted);
-      font-size: 13px;
-    }
+.row {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:10px;
+}
 
-    .tabs {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding: 5px 0 15px;
-      margin-bottom: 10px;
-    }
+.table-wrap {
+  overflow-x:auto;
+  margin-top:12px;
+}
 
-    .tabs button {
-      flex: 0 0 auto;
-      padding: 10px 13px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      background: white;
-      color: var(--text);
-      font-weight: 700;
-    }
+table {
+  width:100%;
+  border-collapse:collapse;
+  min-width:650px;
+}
 
-    .tabs button.active {
-      background: var(--green);
-      color: white;
-      border-color: var(--green);
-    }
+th,td {
+  text-align:left;
+  padding:11px;
+  border-bottom:1px solid var(--border);
+  font-size:13px;
+  vertical-align:top;
+}
 
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
-      margin-bottom: 20px;
-    }
+th { background:#f4f7fb }
 
-    .stat {
-      background: white;
-      padding: 17px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      min-width: 0;
-    }
+td button {
+  margin:2px;
+  padding:7px 9px;
+  font-size:12px;
+}
 
-    .stat-label {
-      color: var(--muted);
-      font-size: 13px;
-    }
+.muted {
+  color:var(--muted);
+  font-size:13px;
+}
 
-    .stat-value {
-      font-size: 27px;
-      font-weight: 800;
-      color: var(--green);
-      overflow-wrap: anywhere;
-    }
+.actions {
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:14px;
+}
 
-    .table-wrap {
-      width: 100%;
-      overflow-x: auto;
-    }
+footer {
+  text-align:center;
+  color:var(--muted);
+  padding:25px;
+  font-size:12px;
+}
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
+@media(max-width:850px) {
+  .cards {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
 
-    th,
-    td {
-      padding: 10px;
-      text-align: left;
-      border: 1px solid var(--border);
-      vertical-align: top;
-      overflow-wrap: anywhere;
-    }
+@media(max-width:550px) {
+  main { padding:12px }
+  header { padding:13px }
+  .brand h1 { font-size:15px }
 
-    th {
-      background: var(--green-light);
-      color: var(--green-dark);
-    }
+  .form-grid { grid-template-columns:1fr }
+  .form-grid .full { grid-column:auto }
 
-    .empty {
-      padding: 14px;
-      color: var(--muted);
-      background: #f8faf8;
-      border-radius: 7px;
-    }
+  .panel { padding:13px }
+  .cards { gap:9px }
+  .stat { padding:12px }
+  .stat strong { font-size:22px }
 
-    .section-heading {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-
-    .section-heading h2 {
-      margin: 0;
-    }
-
-    footer {
-      text-align: center;
-      padding: 20px;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    @media (max-width: 700px) {
-      .container {
-        margin-top: 15px;
-        padding-left: 10px;
-        padding-right: 10px;
-      }
-
-      .grid {
-        grid-template-columns: 1fr;
-      }
-
-      .field.full {
-        grid-column: auto;
-      }
-
-      .stats {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .card {
-        padding: 15px;
-      }
-
-      .brand h1 {
-        font-size: 16px;
-      }
-    }
-
-    @media print {
-      .topbar,
-      .tabs,
-      .btn,
-      footer {
-        display: none !important;
-      }
-    }
-  </style>
+  nav button {
+    flex:1 1 42%;
+    padding:10px 6px;
+  }
+}
+</style>
 </head>
-
 <body>
-  <header class="topbar">
-    <div class="topbar-inner">
-      <div class="brand">
-        <img
-          src="/badge.jpg"
-          alt="Bright Angels Junior School badge"
-          onerror="this.style.display='none'"
-        >
-        <div>
-          <h1>Bright Angels Junior School</h1>
-          <p>Admin Dashboard · If others can, we can.</p>
-        </div>
+
+<header>
+  <div class="brand">
+    <img src="/badge.jpg"
+         alt="School badge"
+         onerror="this.style.display='none'">
+
+    <div>
+      <h1>Bright Angels Junior School</h1>
+      <p>ADMINISTRATION SYSTEM · If others can, we can.</p>
+    </div>
+  </div>
+
+  <button id="logoutBtn"
+          class="danger hidden"
+          type="button">
+    Log out
+  </button>
+</header>
+
+<div id="loginView" class="login-wrap">
+  <h2>Administrator Login</h2>
+
+  <p class="muted">
+    Sign in to manage school records and website information.
+  </p>
+
+  <div id="loginNotice" aria-live="polite"></div>
+
+  <form id="loginForm">
+    <label for="email">Administrator email</label>
+
+    <input
+      id="email"
+      type="email"
+      autocomplete="username"
+      value="brightangels26@gmail.com"
+      required
+    >
+
+    <label for="password">Password</label>
+
+    <input
+      id="password"
+      type="password"
+      autocomplete="current-password"
+      required
+    >
+
+    <div class="actions">
+      <button type="submit">Sign in</button>
+    </div>
+  </form>
+</div>
+
+<main id="dashboard" class="hidden">
+
+  <div id="toast" aria-live="polite"></div>
+
+  <nav id="tabs">
+    <button class="active" data-tab="overview">Overview</button>
+    <button data-tab="students">Students</button>
+    <button data-tab="subjects">Subjects</button>
+    <button data-tab="marks">Marks</button>
+    <button data-tab="fees">School fees</button>
+    <button data-tab="reports">Report cards</button>
+    <button data-tab="admissions">Admissions</button>
+    <button data-tab="announcements">Announcements</button>
+    <button data-tab="messages">Messages</button>
+    <button data-tab="content">Website content</button>
+  </nav>
+
+  <section id="overview" class="tab-section">
+    <div class="row">
+      <div>
+        <h2>School overview</h2>
+        <p class="muted">
+          Manage school information from one place.
+        </p>
       </div>
 
-      <div class="form-actions">
-        <span id="adminLabel"></span>
-        <button id="logoutBtn" class="btn hidden" type="button">
-          Log out
-        </button>
+      <button id="refreshBtn"
+              type="button"
+              class="secondary">
+        Refresh data
+      </button>
+    </div>
+
+    <div class="cards">
+      <div class="stat">
+        <span>Students</span>
+        <strong id="studentCount">0</strong>
+      </div>
+
+      <div class="stat">
+        <span>Subjects</span>
+        <strong id="subjectCount">0</strong>
+      </div>
+
+      <div class="stat">
+        <span>Admissions</span>
+        <strong id="admissionCount">0</strong>
+      </div>
+
+      <div class="stat">
+        <span>Messages</span>
+        <strong id="messageCount">0</strong>
       </div>
     </div>
-  </header>
 
-  <main class="container">
-    <section id="loginPanel" class="card login-card">
-      <h2>Administrator login</h2>
-      <p class="small-note">
-        Sign in to manage the school website and school records.
+    <div class="panel">
+      <h2>System status</h2>
+      <p id="systemStatus" class="muted">
+        Checking connection…
       </p>
+    </div>
+  </section>
+    <section id="students" class="tab-section hidden">
+    <div class="panel">
+      <h2>Student registration</h2>
 
-      <form id="loginForm" class="grid">
-        <div class="field full">
-          <label for="loginEmail">Email address</label>
-          <input
-            id="loginEmail"
-            type="email"
-            autocomplete="username"
-            required
-          >
+      <form id="studentForm">
+        <input type="hidden" id="studentId">
+
+        <div class="form-grid">
+          <div>
+            <label for="studentName">Full name</label>
+            <input id="studentName" required>
+          </div>
+
+          <div>
+            <label for="studentClass">Class</label>
+            <select id="studentClass" required>
+              <option value="">Select class</option>
+              <option>Baby</option>
+              <option>Middle</option>
+              <option>Top</option>
+              <option>P1</option>
+              <option>P2</option>
+              <option>P3</option>
+              <option>P4</option>
+              <option>P5</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="studentGender">Gender</label>
+            <select id="studentGender">
+              <option value="">Select</option>
+              <option>Male</option>
+              <option>Female</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="studentAdmission">Admission number</label>
+            <input id="studentAdmission">
+          </div>
+
+          <div>
+            <label for="studentGuardian">Parent/guardian</label>
+            <input id="studentGuardian">
+          </div>
+
+          <div>
+            <label for="studentPhone">Guardian phone</label>
+            <input id="studentPhone" type="tel">
+          </div>
         </div>
 
-        <div class="field full">
-          <label for="loginPassword">Password</label>
-          <input
-            id="loginPassword"
-            type="password"
-            autocomplete="current-password"
-            required
-          >
-        </div>
-
-        <div class="field full">
-          <button class="btn primary" type="submit">Sign in</button>
-          <div id="loginStatus" class="notice hidden" role="status"></div>
+        <div class="actions">
+          <button type="submit">Save student</button>
+          <button type="button" class="secondary" id="clearStudent">
+            Clear form
+          </button>
         </div>
       </form>
-    </section>
+    </div>
 
-    <section id="dashboard" class="hidden">
-      <nav class="tabs" aria-label="Dashboard sections">
-        <button type="button" data-tab="overview" class="active">Overview</button>
-        <button type="button" data-tab="content">Website text</button>
-        <button type="button" data-tab="announcements">Announcements</button>
-        <button type="button" data-tab="admissions">Admissions</button>
-        <button type="button" data-tab="messages">Messages</button>
-        <button type="button" data-tab="students">Students</button>
-        <button type="button" data-tab="subjects">Subjects</button>
-        <button type="button" data-tab="marks">Marks</button>
-        <button type="button" data-tab="fees">School fees</button>
-        <button type="button" data-tab="reports">Report cards</button>
-      </nav>
+    <div class="panel">
+      <div class="row">
+        <h2>Student records</h2>
+        <button type="button" class="secondary" data-reload="students">
+          Reload
+        </button>
+      </div>
+      <div id="studentsList"></div>
+    </div>
+  </section>
 
-      <section id="overview" class="tabPanel">
-        <div class="section-heading">
-          <h2>Dashboard overview</h2>
-          <button id="refreshAll" type="button" class="btn">Refresh data</button>
-        </div>
+  <section id="subjects" class="tab-section hidden">
+    <div class="panel">
+      <h2>Subjects</h2>
 
-        <div class="stats">
-          <div class="stat">
-            <div class="stat-label">Students</div>
-            <div id="statStudents" class="stat-value">0</div>
+      <form id="subjectForm">
+        <input type="hidden" id="subjectId">
+
+        <div class="form-grid">
+          <div>
+            <label for="subjectName">Subject name</label>
+            <input id="subjectName" required>
           </div>
-          <div class="stat">
-            <div class="stat-label">Admissions</div>
-            <div id="statAdmissions" class="stat-value">0</div>
+
+          <div>
+            <label for="subjectClass">Class</label>
+            <select id="subjectClass" required>
+              <option value="">Select class</option>
+              <option>Baby</option>
+              <option>Middle</option>
+              <option>Top</option>
+              <option>P1</option>
+              <option>P2</option>
+              <option>P3</option>
+              <option>P4</option>
+              <option>P5</option>
+            </select>
           </div>
-          <div class="stat">
-            <div class="stat-label">Messages</div>
-            <div id="statMessages" class="stat-value">0</div>
+        </div>
+
+        <div class="actions">
+          <button type="submit">Save subject</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="panel">
+      <div class="row">
+        <h2>Subject records</h2>
+        <button type="button" class="secondary" data-reload="subjects">
+          Reload
+        </button>
+      </div>
+      <div id="subjectsList"></div>
+    </div>
+  </section>
+
+  <section id="marks" class="tab-section hidden">
+    <div class="panel">
+      <h2>Marks entry</h2>
+
+      <form id="marksForm">
+        <div class="form-grid">
+          <div>
+            <label for="markStudent">Student</label>
+            <select id="markStudent" required>
+              <option value="">Load students first</option>
+            </select>
           </div>
-          <div class="stat">
-            <div class="stat-label">Announcements</div>
-            <div id="statAnnouncements" class="stat-value">0</div>
+
+          <div>
+            <label for="markSubject">Subject</label>
+            <select id="markSubject" required>
+              <option value="">Load subjects first</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="markTerm">Term</label>
+            <select id="markTerm" required>
+              <option value="">Select term</option>
+              <option>Term 1</option>
+              <option>Term 2</option>
+              <option>Term 3</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="markYear">Year</label>
+            <input id="markYear" type="number"
+                   min="2000" max="2100" value="2026" required>
+          </div>
+
+          <div>
+            <label for="markScore">Marks obtained</label>
+            <input id="markScore" type="number"
+                   min="0" max="100" required>
+          </div>
+
+          <div>
+            <label for="markOutOf">Maximum marks</label>
+            <input id="markOutOf" type="number"
+                   min="1" max="1000" value="100" required>
+          </div>
+
+          <div class="full">
+            <label for="markComment">Teacher's comment</label>
+            <textarea id="markComment"></textarea>
           </div>
         </div>
 
-        <div class="card">
-          <h2>System status</h2>
-          <p class="small-note">
-            Use the sections above to manage website text, school announcements,
-            admission enquiries, students, subjects, marks, fee payments and
-            report cards.
-          </p>
-          <div id="overviewStatus" class="notice hidden" role="status"></div>
+        <div class="actions">
+          <button type="submit">Save marks</button>
         </div>
-      </section>
+      </form>
+    </div>
 
-      <section id="content" class="tabPanel hidden">
-        <div class="card">
-          <h2>Edit website text</h2>
-          <p class="small-note">
-            This form saves text through the existing website content API.
-            It does not upload photos or change the website layout.
-          </p>
+    <div class="panel">
+      <div class="row">
+        <h2>Marks records</h2>
+        <button type="button" class="secondary" data-reload="marks">
+          Reload
+        </button>
+      </div>
+      <div id="marksList"></div>
+    </div>
+  </section>
 
-          <form id="contentForm" class="grid">
-            <div class="field">
-              <label for="contentSchoolName">School name</label>
-              <input id="contentSchoolName">
-            </div>
+  <section id="fees" class="tab-section hidden">
+    <div class="panel">
+      <h2>Record school fees payment</h2>
 
-            <div class="field">
-              <label for="contentWelcomeTitle">Welcome title</label>
-              <input id="contentWelcomeTitle">
-            </div>
-
-            <div class="field full">
-              <label for="contentWelcomeText">Welcome text</label>
-              <textarea id="contentWelcomeText"></textarea>
-            </div>
-
-            <div class="field full">
-              <label for="contentAbout">About the school</label>
-              <textarea id="contentAbout"></textarea>
-            </div>
-
-            <div class="field full">
-              <label for="contentContact">Contact information</label>
-              <textarea id="contentContact"></textarea>
-            </div>
-
-            <div class="field">
-              <label for="contentMotto">School motto</label>
-              <input id="contentMotto">
-            </div>
-
-            <div class="field full">
-              <label for="contentExtra">Additional text</label>
-              <textarea id="contentExtra"></textarea>
-            </div>
-
-            <div class="field full">
-              <button class="btn primary" type="submit">Save website text</button>
-              <div id="contentStatus" class="notice hidden" role="status"></div>
-            </div>
-          </form>
-        </div>
-      </section>
-
-      <section id="announcements" class="tabPanel hidden">
-        <div class="card">
-          <h2>Publish announcement</h2>
-
-          <form id="announcementForm" class="grid">
-            <div class="field">
-              <label for="announcementTitle">Title *</label>
-              <input id="announcementTitle" required>
-            </div>
-
-            <div class="field">
-              <label for="announcementDate">Date</label>
-              <input id="announcementDate" type="date">
-            </div>
-
-            <div class="field full">
-              <label for="announcementBody">Announcement *</label>
-              <textarea id="announcementBody" required></textarea>
-            </div>
-
-            <div class="field full">
-              <button class="btn primary" type="submit">Publish announcement</button>
-              <div id="announcementStatus" class="notice hidden" role="status"></div>
-            </div>
-          </form>
-        </div>
-
-        <div class="card">
-          <div class="section-heading">
-            <h2>Published announcements</h2>
-            <button id="refreshAnnouncements" class="btn" type="button">Refresh</button>
+      <form id="feesForm">
+        <div class="form-grid">
+          <div>
+            <label for="feeStudent">Student</label>
+            <select id="feeStudent" required>
+              <option value="">Load students first</option>
+            </select>
           </div>
-          <div id="announcementsList" class="empty">Loading announcements…</div>
-        </div>
-      </section>
 
-      <section id="admissions" class="tabPanel hidden">
-        <div class="card">
-          <div class="section-heading">
-            <h2>Admission applications</h2>
-            <div class="form-actions">
-              <button id="refreshAdmissions" class="btn" type="button">Refresh</button>
-              <button id="exportAdmissions" class="btn" type="button">Export CSV</button>
-            </div>
+          <div>
+            <label for="feeTerm">Term</label>
+            <select id="feeTerm" required>
+              <option value="">Select term</option>
+              <option>Term 1</option>
+              <option>Term 2</option>
+              <option>Term 3</option>
+            </select>
           </div>
-          <div id="admissionsList" class="empty">Loading applications…</div>
-        </div>
-      </section>
 
-      <section id="messages" class="tabPanel hidden">
-        <div class="card">
-          <div class="section-heading">
-            <h2>Parent messages and feedback</h2>
-            <button id="refreshMessages" class="btn" type="button">Refresh</button>
+          <div>
+            <label for="feeYear">Year</label>
+            <input id="feeYear" type="number" value="2026" required>
           </div>
-          <div id="messagesList" class="empty">Loading messages…</div>
-        </div>
-      </section>
 
-      <section id="students" class="tabPanel hidden">
-        <div class="card">
-          <h2>Register student</h2>
-
-          <form id="studentForm" class="grid">
-            <div class="field">
-              <label for="studentAdmission">Admission number *</label>
-              <input id="studentAdmission" required>
-            </div>
-
-            <div class="field">
-              <label for="studentName">Full name *</label>
-              <input id="studentName" required>
-            </div>
-
-            <div class="field">
-              <label for="studentDOB">Date of birth</label>
-              <input id="studentDOB" type="date">
-            </div>
-
-            <div class="field">
-              <label for="studentGender">Gender</label>
-              <select id="studentGender">
-                <option value="">Select gender</option>
-                <option>Male</option>
-                <option>Female</option>
-                <option>Other</option>
-              </select>
-            </div>
-
-            <div class="field">
-              <label for="studentClass">Class *</label>
-              <select id="studentClass" required>
-                <option value="">Select class</option>
-                <option>Baby</option>
-                <option>Middle</option>
-                <option>Top</option>
-                <option>P1</option>
-                <option>P2</option>
-                <option>P3</option>
-                <option>P4</option>
-                <option>P5</option>
-                <option>P6</option>
-                <option>P7</option>
-              </select>
-            </div>
-
-            <div class="field">
-              <label for="studentEnrollment">Enrollment date</label>
-              <input id="studentEnrollment" type="date">
-            </div>
-
-            <div class="field">
-              <label for="studentParent">Parent/guardian</label>
-              <input id="studentParent">
-            </div>
-
-            <div class="field">
-              <label for="studentPhone">Parent phone</label>
-              <input id="studentPhone" type="tel">
-            </div>
-
-            <div class="field">
-              <label for="studentEmail">Parent email</label>
-              <input id="studentEmail" type="email">
-            </div>
-
-            <div class="field">
-              <label for="studentAddress">Address</label>
-              <input id="studentAddress">
-            </div>
-
-            <div class="field full">
-              <button class="btn primary" type="submit">Register student</button>
-              <div id="studentStatus" class="notice hidden" role="status"></div>
-            </div>
-          </form>
-        </div>
-
-        <div class="card">
-          <div class="section-heading">
-            <h2>Student register</h2>
-            <button id="refreshStudents" class="btn" type="button">Refresh students</button>
+          <div>
+            <label for="feeAmount">Amount paid (UGX)</label>
+            <input id="feeAmount" type="number" min="0" required>
           </div>
-          <div id="studentsList" class="empty">Loading students…</div>
-        </div>
-      </section>
 
-      <section id="subjects" class="tabPanel hidden">
-        <div class="card">
-          <h2>Add subject</h2>
-
-          <form id="subjectForm" class="grid">
-            <div class="field">
-              <label for="subjectName">Subject name *</label>
-              <input id="subjectName" required>
-            </div>
-
-            <div class="field">
-              <label>&nbsp;</label>
-              <button class="btn primary" type="submit">Add subject</button>
-            </div>
-
-            <div class="field full">
-              <div id="subjectStatus" class="notice hidden" role="status"></div>
-            </div>
-          </form>
-        </div>
-
-        <div class="card">
-          <div class="section-heading">
-            <h2>Subjects</h2>
-            <button id="refreshSubjects" class="btn" type="button">Refresh subjects</button>
+          <div>
+            <label for="feeBalance">Outstanding balance (UGX)</label>
+            <input id="feeBalance" type="number" min="0" value="0">
           </div>
-          <div id="subjectsList" class="empty">Loading subjects…</div>
+
+          <div>
+            <label for="feeReference">Receipt/reference</label>
+            <input id="feeReference">
+          </div>
         </div>
-      </section>
 
-      <section id="marks" class="tabPanel hidden">
-        <div class="card">
-          <h2>Record student marks</h2>
+        <div class="actions">
+          <button type="submit">Save payment</button>
+        </div>
+      </form>
+    </div>
 
-          <form id="marksForm" class="grid">
-            <div class="field">
-              <label for="marksStudent">Student *</label>
-              <select id="marksStudent" required>
-                <option value="">Load students first</option>
-              </select>
-            </div>
+    <div class="panel">
+      <div class="row">
+        <h2>Fees records</h2>
+        <button type="button" class="secondary" data-reload="fees">
+          Reload
+        </button>
+      </div>
+      <div id="feesList"></div>
+    </div>
+  </section>
+    <section id="reports" class="tab-section hidden">
+    <div class="panel">
+      <h2>Report cards</h2>
 
-            <div class="field">
-              <label for="marksSubject">Subject *</label>
-              <select id="marksSubject" required>
-                <option value="">Load subjects first</option>
-              </select>
-            </div>
+      <p class="muted">
+        Choose a pupil and term to view available report-card records.
+      </p>
 
-            <div class="field">
-              <label for="marksYear">Academic year *</label>
-              <input id="marksYear" required value="2026">
-            </div>
+      <div class="form-grid">
+        <div>
+          <label for="reportStudent">Student</label>
+          <select id="reportStudent">
+            <option value="">Select student</option>
+          </select>
+        </div>
 
-            <div class="field">
-              <label for="marksTerm">Term *</label>
-              <select id="marksTerm" required>
-                <option value="">Select term</option>
-                <option>Term 1</option>
-                <option>Term 2</option>
-                <option>Term 3</option>
-              </select>
-            </div>
+        <div>
+          <label for="reportTerm">Term</label>
+          <select id="reportTerm">
+            <option>Term 1</option>
+            <option>Term 2</option>
+            <option>Term 3</option>
+          </select>
+        </div>
 
-            <div class="field">
-              <label for="marksType">Assessment type</label>
-              <select id="marksType">
-                <option>Exam</option>
-                <option>Test</option>
-                <option>Coursework</option>
-                <option>Project</option>
-              </select>
-            </div>
+        <div>
+          <label for="reportYear">Year</label>
+          <input id="reportYear" type="number" value="2026">
+        </div>
+      </div>
 
-            <div class="field">
-              <label for="marksObtained">Marks obtained *</label>
-              <input id="marksO
+      <div class="actions">
+        <button type="button" id="loadReportBtn">Load report</button>
+        <button type="button" class="secondary" id="printReportBtn">
+          Print report
+        </button>
+      </div>
+
+      <div id="reportResult"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Saved report-card records</h2>
+      <button type="button" class="secondary" data-reload="reports">
+        Reload
+      </button>
+      <div id="reportsList"></div>
+    </div>
+  </section>
+
+  <section id="admissions" class="tab-section hidden">
+    <div class="panel">
+      <h2>Admission applications</h2>
+
+      <p class="muted">
+        Review applications submitted through the public school website.
+      </p>
+
+      <button type="button" class="secondary"
+              data-reload="admissions">
+        Reload applications
+      </button>
+
+      <div id="admissionsList"></div>
+    </div>
+  </section>
+
+  <section id="announcements" class="tab-section hidden">
+    <div class="panel">
+      <h2>School announcements</h2>
+
+      <form id="announcementForm">
+        <input type="hidden" id="announcementId">
+
+        <label for="announcementTitle">Title</label>
+        <input id="announcementTitle" required>
+
+        <label for="announcementBody">Announcement</label>
+        <textarea id="announcementBody" required></textarea>
+
+        <div class="actions">
+          <button type="submit">Publish announcement</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="panel">
+      <div class="row">
+        <h2>Published announcements</h2>
+        <button type="button" class="secondary"
+                data-reload="announcements">
+          Reload
+        </button>
+      </div>
+
+      <div id="announcementsList"></div>
+    </div>
+  </section>
+
+  <section id="messages" class="tab-section hidden">
+    <div class="panel">
+      <h2>Parent messages and feedback</h2>
+
+      <button type="button" class="secondary" data-reload="messages">
+        Reload messages
+      </button>
+
+      <div id="messagesList"></div>
+    </div>
+  </section>
+    <section id="content" class="tab-section hidden">
+    <div class="panel">
+      <h2>Edit School Website</h2>
+      <p>Change the information displayed on the public school website.</p>
+
+      <form id="contentForm">
+        <label for="contentKey">Information to edit</label>
+        <select id="contentKey" required>
+          <option value="welcome_title">Welcome heading</option>
+          <option value="welcome_text">Welcome description</option>
+          <option value="about">About the school</option>
+          <option value="mission">Our mission</option>
+          <option value="vision">Our vision</option>
+          <option value="contact">Contact information</option>
+        </select>
+
+        <label for="contentValue">New information</label>
+        <textarea id="contentValue" rows="5" required></textarea>
+
+        <button type="submit">Save Website Information</button>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer>
+  Bright Angels Junior School | Administration Dashboard
+  <br>
+  <small>If others can, we can.</small>
+</footer>
+
+<script>
+'use strict';
+
+const $ = id => document.getElementById(id);
+
+let state = {
+  students: [],
+  subjects: [],
+  marks: [],
+  fees: [],
+  reports: [],
+  admissions: [],
+  announcements: [],
+  messages: [],
+  content: []
+};
+
+function notice(message, type = 'success') {
+  const box = $('toast');
+  if (!box) return;
+
+  box.textContent = message;
+  box.className = 'toast ' + type;
+  box.classList.remove('hidden');
+
+  setTimeout(() => {
+    box.classList.add('hidden');
+  }, 4000);
+}
+
+function loginNotice(message) {
+  const box = $('loginMessage');
+  if (box) box.textContent = message;
+}
+
+async function api(url, options = {}) {
+  const response = await fetch(url, {
+    ...options,
+    credentials: 'same-origin',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(options.headers || {})
+    }
+  });
+
+  const text = await response.text();
+  let data = {};
+
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    data = { message: text };
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      data.error || data.message || `Request failed (${response.status})`
+    );
+  }
+
+  return data;
+}
+
+function unwrap(result) {
+  if (Array.isArray(result)) return result;
+  if (Array.isArray(result.data)) return result.data;
+  if (Array.isArray(result.results)) return result.results;
+  if (Array.isArray(result.items)) return result.items;
+  return [];
+}
+
+function escapeHTML(value) {
+  return String(value ?? '').replace(/[&<>"']/g, character => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  })[character]);
+}
+
+function firstValue(record, keys, fallback = '') {
+  for (const key of keys) {
+    if (record && record[key] !== undefined && record[key] !== null) {
+      return record[key];
+    }
+  }
+  return fallback;
+}
+
+function displayTable(containerId, columns, records, emptyMessage = 'No records found.') {
+  const container = $(containerId);
+  if (!container) return;
+
+  if (!records || records.length === 0) {
+    container.innerHTML = `<p>${escapeHTML(emptyMessage)}</p>`;
+    return;
+  }
+
+  let html = '<div class="table-wrap"><table><thead><tr>';
+
+  for (const column of columns) {
+    html += `<th>${escapeHTML(column.label)}</th>`;
+  }
+
+  html += '</tr></thead><tbody>';
+
+  for (const record of records) {
+    html += '<tr>';
+
+    for (const column of columns) {
+      const value = typeof column.value === 'function'
+        ? column.value(record)
+        : firstValue(record, [column.value]);
+
+      html += `<td>${escapeHTML(value)}</td>`;
+    }
+
+    html += '</tr>';
+  }
+
+  html += '</tbody></table></div>';
+  container.innerHTML = html;
+}
+
+function showLogin() {
+  $('loginPanel')?.classList.remove('hidden');
+  $('dashboard')?.classList.add('hidden');
+}
+
+function showDashboard() {
+  $('loginPanel')?.classList.add('hidden');
+  $('dashboard')?.classList.remove('hidden');
+}
+
+function setActiveTab(tabId) {
+  document.querySelectorAll('.tab-section').forEach(section => {
+    section.classList.add('hidden');
+  });
+
+  $(tabId)?.classList.remove('hidden');
+
+  document.querySelectorAll('[data-tab]').forEach(button => {
+    button.classList.toggle(
+      'active',
+      button.dataset.tab === tabId
+    );
+  });
+}
+
+document.querySelectorAll('[data-tab]').forEach(button => {
+  button.addEventListener('click', () => {
+    setActiveTab(button.dataset.tab);
+  });
+});
+  async function loadResource(key, endpoint) {
+  try {
+    const result = await api(endpoint);
+    state[key] = unwrap(result);
+  } catch (error) {
+    console.error(`Could not load ${key}:`, error);
+    state[key] = [];
+  }
+}
+
+function renderStudents() {
+  displayTable('studentsList', [
+    { label: 'Admission No.', value: r => firstValue(r, ['admission_number', 'admission_no'], '') },
+    { label: 'Student Name', value: r => firstValue(r, ['name', 'student_name'], '') },
+    { label: 'Class', value: r => firstValue(r, ['class', 'class_name'], '') },
+    { label: 'Gender', value: 'gender' },
+    { label: 'Guardian', value: 'guardian' },
+    { label: 'Phone', value: 'phone' }
+  ], state.students);
+}
+
+function renderSubjects() {
+  displayTable('subjectsList', [
+    { label: 'Subject', value: 'name' },
+    { label: 'Class', value: r => firstValue(r, ['class', 'class_name'], '') }
+  ], state.subjects);
+}
+
+function renderMarks() {
+  displayTable('marksList', [
+    { label: 'Student', value: r => firstValue(r, ['student_name', 'name'], r.student_id) },
+    { label: 'Subject', value: r => firstValue(r, ['subject_name'], r.subject_id) },
+    { label: 'Term', value: 'term' },
+    { label: 'Year', value: 'year' },
+    { label: 'Score', value: 'score' },
+    { label: 'Out of', value: 'out_of' },
+    { label: 'Comment', value: 'comment' }
+  ], state.marks);
+}
+
+function renderFees() {
+  displayTable('feesList', [
+    { label: 'Student', value: r => firstValue(r, ['student_name', 'name'], r.student_id) },
+    { label: 'Term', value: 'term' },
+    { label: 'Year', value: 'year' },
+    { label: 'Amount Paid', value: 'amount_paid' },
+    { label: 'Balance', value: 'balance' },
+    { label: 'Reference', value: 'reference' }
+  ], state.fees);
+}
+
+function renderReports() {
+  displayTable('reportsList', [
+    { label: 'Student', value: r => firstValue(r, ['student_name', 'name'], r.student_id) },
+    { label: 'Term', value: 'term' },
+    { label: 'Year', value: 'year' },
+    { label: 'Average', value: 'average' },
+    { label: 'Grade', value: 'grade' }
+  ], state.reports);
+}
+
+function renderAdmissions() {
+  displayTable('admissionsList', [
+    { label: 'Applicant', value: r => firstValue(r, ['child_name', 'student_name', 'name'], '') },
+    { label: 'Class Requested', value: r => firstValue(r, ['class_applied', 'class', 'requested_class'], '') },
+    { label: 'Parent/Guardian', value: r => firstValue(r, ['parent_name', 'guardian'], '') },
+    { label: 'Phone', value: r => firstValue(r, ['phone', 'parent_phone'], '') },
+    { label: 'Status', value: 'status' }
+  ], state.admissions);
+}
+
+function renderAnnouncements() {
+  displayTable('announcementsList', [
+    { label: 'Title', value: 'title' },
+    { label: 'Message', value: 'body' },
+    { label: 'Date', value: r => firstValue(r, ['created_at', 'date'], '') }
+  ], state.announcements);
+}
+
+function renderMessages() {
+  displayTable('messagesList', [
+    { label: 'Name', value: 'name' },
+    { label: 'Email', value: 'email' },
+    { label: 'Phone', value: 'phone' },
+    { label: 'Message', value: r => firstValue(r, ['message', 'body'], '') },
+    { label: 'Date', value: r => firstValue(r, ['created_at', 'date'], '') }
+  ], state.messages);
+}
+
+function renderContent() {
+  const select = $('contentKey');
+  const textarea = $('contentValue');
+  if (!select || !textarea) return;
+
+  const record = state.content.find(item =>
+    firstValue(item, ['key', 'setting_key']) === select.value
+  );
+
+  textarea.value = record
+    ? firstValue(record, ['value', 'setting_value'], '')
+    : '';
+}
+
+function fillSelect(id, records, labelKeys, valueKeys = ['id']) {
+  const select = $(id);
+  if (!select) return;
+
+  const oldValue = select.value;
+  select.innerHTML = '<option value="">Select...</option>';
+
+  for (const record of records) {
+    const value = firstValue(record, valueKeys, '');
+    const label = firstValue(record, labelKeys, value);
+
+    if (value === '') continue;
+
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = label;
+    select.appendChild(option);
+  }
+
+  if ([...select.options].some(option => option.value === oldValue)) {
+    select.value = oldValue;
+  }
+}
+
+function updateSelects() {
+  fillSelect(
+    'markStudent',
+    state.students,
+    ['name', 'student_name'],
+    ['id', 'student_id']
+  );
+
+  fillSelect(
+    'feeStudent',
+    state.students,
+    ['name', 'student_name'],
+    ['id', 'student_id']
+  );
+
+  fillSelect(
+    'reportStudent',
+    state.students,
+    ['name', 'student_name'],
+    ['id', 'student_id']
+  );
+
+  fillSelect(
+    'markSubject',
+    state.subjects,
+    ['name', 'subject_name'],
+    ['id', 'subject_id']
+  );
+}
+
+async function loadAll() {
+  await Promise.all([
+    loadResource('students', '/api/students'),
+    loadResource('subjects', '/api/subjects'),
+    loadResource('marks', '/api/marks'),
+    loadResource('fees', '/api/fees'),
+    loadResource('reports', '/api/report-cards'),
+    loadResource('admissions', '/api/admissions'),
+    loadResource('announcements', '/api/announcements'),
+    loadResource('messages', '/api/messages'),
+    loadResource('content', '/api/content')
+  ]);
+
+  renderStudents();
+  renderSubjects();
+  renderMarks();
+  renderFees();
+  renderReports();
+  renderAdmissions();
+  renderAnnouncements();
+  renderMessages();
+  updateSelects();
+  renderContent();
+
+  $('studentCount') && ($('studentCount').textContent = state.students.length);
+  $('subjectCount') && ($('subjectCount').textContent = state.subjects.length);
+  $('admissionCount') && ($('admissionCount').textContent = state.admissions.length);
+  $('messageCount') && ($('messageCount').textContent = state.messages.length);
+}
+  async function submitRecord(endpoint, method, data) {
+  try {
+    await api(endpoint, {
+      method,
+      body: JSON.stringify(data)
+    });
+
+    notice('Saved successfully.');
+    await loadAll();
+    return true;
+  } catch (error) {
+    notice(error.message || 'Could not save the record.', 'error');
+    return false;
+  }
+}
+
+/* LOGIN */
+$('loginForm')?.addEventListener('submit', async event => {
+  event.preventDefault();
+  loginNotice('Signing in...');
+
+  try {
+    await api('/api/login', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: $('loginEmail').value.trim(),
+        password: $('loginPassword').value
+      })
+    });
+
+    loginNotice('');
+    showDashboard();
+    await loadAll();
+    notice('Welcome to the administration dashboard.');
+  } catch (error) {
+    loginNotice(error.message || 'Login failed. Check your details.');
+  }
+});
+
+/* LOGOUT */
+$('logoutBtn')?.addEventListener('click', async () => {
+  try {
+    await api('/api/logout', {
+      method: 'POST',
+      body: JSON.stringify({})
+    });
+  } catch (error) {
+    console.error('Logout request failed:', error);
+  }
+
+  showLogin();
+  notice('You have been logged out.');
+});
+
+/* STUDENTS */
+$('studentForm')?.addEventListener('submit', async event => {
+  event.preventDefault();
+
+  const id = $('studentId').value;
+  const data = {
+    name: $('studentName').value.trim(),
+    class: $('studentClass').value,
+    gender: $('studentGender').value,
+    admission_number: $('studentAdmission').value.trim(),
+    guardian: $('studentGuardian').value.trim(),
+    phone: $('studentPhone').value.trim()
+  };
+
+  const saved = await submitRecord(
+    id ? `/api/students/${encodeURIComponent(id)}` : '/api/students',
+    id ? 'PUT' : 'POST',
+    data
+  );
+
+  if (saved) $('studentForm').reset();
+  if (saved) $('studentId').value = '';
+});
+
+$('clearStudent')?.addEventListener('click', () => {
+  $('studentForm')?.reset();
+  $('studentId').value = '';
+});
+
+/* SUBJECTS */
+$('subjectForm')?.addEventListener('submit', async event => {
+  event.preventDefault();
+
+  const id = $('subjectId').value;
+  const data = {
+    name: $('subjectName').value.trim(),
+    class: $('subjectClass').value
+  };
+
+  const saved = await submitRecord(
+    id ? `/api/subjects/${encodeURIComponent(id)}` : '/api/subjects',
+    id ? 'PUT' : 'POST',
+    data
+  );
+
+  if (saved) $('subjectForm').reset();
+  if (saved) $('subjectId').value = '';
+});
+
+/* MARKS */
+$('marksForm')?.addEventListener('submit', async event => {
+  event.preventDefault();
+
+  const score = Number($('markScore').value);
+  const outOf = Number($('markOutOf').value);
+
+  if (!Number.isFinite(score) || !Number.isFinite(outOf) ||
+      outOf <= 0 || score < 0 || score > outOf) {
+    notice('Enter a valid score within the available marks.', 'error');
+    return;
+  }
+
+  await submitRecord('/api/marks', 'POST', {
+    student_id: $('markStudent').value,
+    subject_id: $('markSubject').value,
+    term: $('markTerm').value,
+    year: Number($('markYear').value),
+    score,
+    out_of: outOf,
+    comment: $('markComment').value.trim()
+  });
+
+  $('marksForm').reset();
+  updateSelects();
+});
+
+/* FEES */
+$('feesForm')?.addEventListener('submit', async event => {
+  event.preventDefault();
+
+  const amount = Number($('feeAmount').value);
+  const balance = Number($('feeBalance').value);
+
+  if (amount < 0 || balance < 0 ||
+      !Number.isFinite(amount) || !Number.isFinite(balance)) {
+    notice('Amounts and balances cannot be negative.', 'error');
+    return;
+  }
+
+  await submitRecord('/api/fees', 'POST', {
+    student_id: $('feeStudent').value,
+    term: $('feeTerm').value,
+    year: Number($('feeYear').value),
+    amount_paid: amount,
+    balance,
+    reference: $('feeReference').value.trim()
+  });
+
+  $('feesForm').reset();
+  updateSelects();
+});
+
+/* ANNOUNCEMENTS */
+$('announcementForm')?.addEventListener('submit', async event => {
+  event.preventDefault();
+
+  const id = $('announcementId').value;
+  const data = {
+    title: $('announcementTitle').value.trim(),
+    body: $('announcementBody').value.trim()
+  };
+
+  const saved = await submitRecord(
+    id
+      ? `/api/announcements/${encodeURIComponent(id)}`
+      : '/api/announcements',
+    id ? 'PUT' : 'POST',
+    data
+  );
+
+  if (saved) $('announcementForm').reset();
+  if (saved) $('announcementId').value = '';
+});
+
+/* WEBSITE CONTENT */
+$('contentKey')?.addEventListener('change', renderContent);
+
+$('contentForm')?.addEventListener('submit', async event => {
+  event.preventDefault();
+
+  const key = $('contentKey').value;
+  const value = $('contentValue').value.trim();
+
+  await submitRecord('/api/content', 'PUT', { key, value });
+});
+
+/* REPORT CARDS */
+$('loadReportBtn')?.addEventListener('click', async () => {
+  const studentId = $('reportStudent').value;
+  const term = $('reportTerm').value;
+  const year = $('reportYear').value;
+
+  if (!studentId || !term || !year) {
+    notice('Select a student, term and year first.', 'error');
+    return;
+  }
+
+  const resultBox = $('reportResult');
+  resultBox.textContent = 'Loading report...';
+
+  try {
+    const result = await api(
+      `/api/report-cards?student_id=${encodeURIComponent(studentId)}` +
+      `&term=${encodeURIComponent(term)}&year=${encodeURIComponent(year)}`
+    );
+
+    const report = result.data || result.report || result;
+    resultBox.textContent = JSON.stringify(report, null, 2);
+  } catch (error) {
+    resultBox.textContent = error.message;
+  }
+});
+
+$('printReportBtn')?.addEventListener('click', () => {
+  const report = $('reportResult');
+
+  if (!report || !report.textContent.trim()) {
+    notice('Load a report card before printing.', 'error');
+    return;
+  }
+
+  const printWindow = window.open('', '_blank');
+
+  if (!printWindow) {
+    notice('Allow pop-ups to print the report.', 'error');
+    return;
+  }
+
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Student Report Card</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 24px; }
+          pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+        </style>
+      </head>
+      <body>
+        <h1>Bright Angels Junior School</h1>
+        <h2>Student Report</h2>
+        <pre>${escapeHTML(report.textContent)}</pre>
+      </body>
+    </html>
+  `);
+
+  printWindow.document.close();
+  printWindow.focus();
+  printWindow.print();
+});
+
+/* INITIAL SESSION CHECK */
+async function restoreSession() {
+  showLogin();
+
+  try {
+    await api('/api/data');
+    showDashboard();
+    await loadAll();
+  } catch (error) {
+    showLogin();
+  }
+}
+
+restoreSession();
+</script>
+</body>
+</html>
