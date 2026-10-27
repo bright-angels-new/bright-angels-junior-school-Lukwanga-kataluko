@@ -188,11 +188,18 @@ export async function onRequest({ request, env }) {
     );
   }
 
-  try {
-    await env.DB.exec(schema);
+    try {
+    const statements = schema
+      .split(';')
+      .map(statement => statement.trim())
+      .filter(Boolean);
+
+    for (const statement of statements) {
+      await env.DB.prepare(statement).run();
+    }
   } catch (e) {
     return error('Database setup failed: ' + e.message, 500);
-  }
+    }
 
   const url = new URL(request.url);
   const path = url.pathname
