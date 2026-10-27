@@ -1816,10 +1816,954 @@
       editingStudentId = null;
     });
 
-    // Saving handlers will be added in the next part.
-    // Do not deploy until the remaining parts are complete.
+        // ==========================================
+    // STUDENT SAVE AND UPDATE
+    // ==========================================
 
+    $('studentForm')?.addEventListener('submit', async event => {
+      event.preventDefault();
+
+      const button = $('studentForm').querySelector(
+        'button[type="submit"]'
+      );
+
+      button.disabled = true;
+      button.textContent = 'Saving...';
+
+      try {
+        const id = $('studentId').value.trim();
+
+        const student = {
+          name: $('studentName').value.trim(),
+          class: $('studentClass').value,
+          gender: $('studentGender').value,
+          guardian: $('studentGuardian').value.trim(),
+          phone: $('studentPhone').value.trim(),
+          admission_no: $('studentAdmissionNo').value.trim()
+        };
+
+        if (!student.name || !student.class) {
+          throw new Error('Enter the student name and class.');
+        }
+
+        const path = id
+          ? `${SCHOOL_API}/students/${encodeURIComponent(id)}`
+          : `${SCHOOL_API}/students`;
+
+        await api(path, {
+          method: id ? 'PUT' : 'POST',
+          body: JSON.stringify(student)
+        });
+
+        $('studentForm').reset();
+        $('studentId').value = '';
+        editingStudentId = null;
+
+        await loadStudents();
+
+        notice(
+          id
+            ? 'Student updated successfully.'
+            : 'Student registered successfully.'
+        );
+
+      } catch (error) {
+        notice('Student was not saved: ' + error.message, 'error');
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Save Student';
+      }
+    });
+
+
+    // ==========================================
+    // SUBJECT SAVE AND UPDATE
+    // ==========================================
+
+    $('subjectForm')?.addEventListener('submit', async event => {
+      event.preventDefault();
+
+      const button = $('subjectForm').querySelector(
+        'button[type="submit"]'
+      );
+
+      button.disabled = true;
+      button.textContent = 'Saving...';
+
+      try {
+        const id = $('subjectId').value.trim();
+
+        const subject = {
+          name: $('subjectName').value.trim(),
+          class: $('subjectClass').value
+        };
+
+        if (!subject.name || !subject.class) {
+          throw new Error('Enter the subject name and class.');
+        }
+
+        const path = id
+          ? `${SCHOOL_API}/subjects/${encodeURIComponent(id)}`
+          : `${SCHOOL_API}/subjects`;
+
+        await api(path, {
+          method: id ? 'PUT' : 'POST',
+          body: JSON.stringify(subject)
+        });
+
+        $('subjectForm').reset();
+        $('subjectId').value = '';
+        editingSubjectId = null;
+
+        await loadSubjects();
+
+        notice(
+          id
+            ? 'Subject updated successfully.'
+            : 'Subject saved successfully.'
+        );
+
+      } catch (error) {
+        notice('Subject was not saved: ' + error.message, 'error');
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Save Subject';
+      }
+    });
+
+    // ==========================================
+    // FORM RESET
+    // ==========================================
+
+    $('studentForm')?.addEventListener('reset', () => {
+      $('studentId').value = '';
+      editingStudentId = null;
+    });
+    // ==========================================
+    // SAVE EXAMINATION MARKS
+    // ==========================================
+
+    $('marksForm')?.addEventListener('submit', async event => {
+      event.preventDefault();
+
+      const button = $('marksForm').querySelector(
+        'button[type="submit"]'
+      );
+
+      button.disabled = true;
+      button.textContent = 'Saving marks...';
+
+      try {
+        const score = Number($('marksScore').value);
+
+        if (
+          !Number.isFinite(score) ||
+          score < 0 ||
+          score > 100
+        ) {
+          throw new Error('Marks must be between 0 and 100.');
+        }
+
+        const record = {
+          student_id: $('marksStudent').value,
+          subject_id: $('marksSubject').value,
+          term: $('marksTerm').value,
+          year: Number($('marksYear').value),
+          marks: score
+        };
+
+        if (
+          !record.student_id ||
+          !record.subject_id ||
+          !record.term ||
+          !record.year
+        ) {
+          throw new Error('Complete all required fields.');
+        }
+
+        await api(`${SCHOOL_API}/marks`, {
+          method: 'POST',
+          body: JSON.stringify(record)
+        });
+
+        $('marksForm').reset();
+
+        notice('Marks submitted successfully.');
+
+        await loadMarks();
+
+      } catch (error) {
+        notice('Marks were not saved: ' + error.message, 'error');
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Save Marks';
+      }
+    });
+
+
+    // ==========================================
+    // LOAD EXAMINATION MARKS
+    // ==========================================
+
+    async function loadMarks() {
+      const result = await api(`${SCHOOL_API}/marks`);
+
+      marks = Array.isArray(result)
+        ? result
+        : result.marks || result.data || [];
+
+      const table = $('marksTable');
+
+      if (!table) return;
+
+      table.replaceChildren();
+
+      if (marks.length === 0) {
+        const row = table.insertRow();
+        const cell = row.insertCell();
+
+        cell.colSpan = 6;
+        cell.textContent = 'No examination records found.';
+
+        return;
+      }
+
+      marks.forEach(record => {
+        const row = table.insertRow();
+
+        const student = students.find(
+          item => String(item.id) === String(record.student_id)
+        );
+
+        const subject = subjects.find(
+          item => String(item.id) === String(record.subject_id)
+        );
+
+        row.insertCell().textContent =
+          record.student_name ||
+          student?.name ||
+          student?.full_name ||
+          'Student';
+
+        row.insertCell().textContent =
+          record.subject_name ||
+          subject?.name ||
+          'Subject';
+
+        row.insertCell().textContent =
+          record.term ?? '';
+
+        row.insertCell().textContent =
+          record.year ?? '';
+
+        row.insertCell().textContent =
+          record.marks ?? record.score ?? '';
+
+        const actions = row.insertCell();
+
+        const deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.className = 'btn btn-danger';
+        deleteButton.textContent = 'Delete';
+
+        deleteButton.addEventListener('click', async () => {
+          if (!confirm('Delete this examination record?')) return;
+
+          try {
+            await api(
+              `${SCHOOL_API}/marks/${encodeURIComponent(record.id)}`,
+              { method: 'DELETE' }
+            );
+
+            await loadMarks();
+
+            notice('Examination record deleted.');
+
+          } catch (error) {
+            notice('Could not delete record: ' + error.message, 'error');
+          }
+        });
+
+        actions.appendChild(deleteButton);
+      });
+    }
+
+
+    // ==========================================
+    // SAVE SCHOOL FEES
+    // ==========================================
+
+    $('feesForm')?.addEventListener('submit', async event => {
+      event.preventDefault();
+
+      const button = $('feesForm').querySelector(
+        'button[type="submit"]'
+      );
+
+      button.disabled = true;
+      button.textContent = 'Saving fees...';
+
+      try {
+        const paid = Number($('feePaid').value);
+        const balance = Number($('feeBalance').value);
+
+        if (
+          !Number.isFinite(paid) ||
+          !Number.isFinite(balance) ||
+          paid < 0 ||
+          balance < 0
+        ) {
+          throw new Error('Amounts cannot be negative.');
+        }
+
+        const record = {
+          student_id: $('feeStudent').value,
+          term: $('feeTerm').value,
+          year: Number($('feeYear').value),
+          amount_paid: paid,
+          balance: balance,
+          reference: $('feeReference').value.trim()
+        };
+
+        if (
+          !record.student_id ||
+          !record.term ||
+          !record.year
+        ) {
+          throw new Error('Complete all required fields.');
+        }
+
+        await api(`${SCHOOL_API}/fees`, {
+          method: 'POST',
+          body: JSON.stringify(record)
+        });
+
+        $('feesForm').reset();
+
+        notice('School fee record submitted successfully.');
+
+        await loadFees();
+
+      } catch (error) {
+        notice('Fee record was not saved: ' + error.message, 'error');
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Save Fee Record';
+      }
+    });
+
+
+    // ==========================================
+    // LOAD SCHOOL FEES
+    // ==========================================
+
+    async function loadFees() {
+      const result = await api(`${SCHOOL_API}/fees`);
+
+      fees = Array.isArray(result)
+        ? result
+        : result.fees || result.data || [];
+
+      const table = $('feesTable');
+
+      if (!table) return;
+
+      table.replaceChildren();
+
+      if (fees.length === 0) {
+        const row = table.insertRow();
+        const cell = row.insertCell();
+
+        cell.colSpan = 6;
+        cell.textContent = 'No fee records found.';
+
+        return;
+      }
+
+      fees.forEach(record => {
+        const row = table.insertRow();
+
+        const student = students.find(
+          item => String(item.id) === String(record.student_id)
+        );
+
+        row.insertCell().textContent =
+          record.student_name ||
+          student?.name ||
+          student?.full_name ||
+          'Student';
+
+        row.insertCell().textContent = record.term ?? '';
+        row.insertCell().textContent = record.year ?? '';
+
+        row.insertCell().textContent =
+          Number(record.amount_paid || 0).toLocaleString();
+
+        row.insertCell().textContent =
+          Number(record.balance || 0).toLocaleString();
+
+        const actions = row.insertCell();
+
+        const deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.className = 'btn btn-danger';
+        deleteButton.textContent = 'Delete';
+
+        deleteButton.addEventListener('click', async () => {
+          if (!confirm('Delete this fee record?')) return;
+
+          try {
+            await api(
+              `${SCHOOL_API}/fees/${encodeURIComponent(record.id)}`,
+              { method: 'DELETE' }
+            );
+
+            await loadFees();
+
+            notice('Fee record deleted.');
+
+          } catch (error) {
+            notice('Could not delete fee record: ' + error.message, 'error');
+          }
+        });
+
+        actions.appendChild(deleteButton);
+      });
+    });
+    $('subjectForm')?.addEventListener('reset', () => {
+      $('subjectId').value = '';
+      editingSubjectId = null;
+    });
+        // ==========================================
+    // REPORT CARDS
+    // ==========================================
+
+    $('reportForm')?.addEventListener('submit', async event => {
+      event.preventDefault();
+
+      const button = $('reportForm').querySelector(
+        'button[type="submit"]'
+      );
+
+      button.disabled = true;
+      button.textContent = 'Loading report...';
+
+      try {
+        const studentId = $('reportStudent').value;
+        const term = $('reportTerm').value;
+        const year = Number($('reportYear').value);
+
+        if (!studentId || !term || !year) {
+          throw new Error('Complete all report card fields.');
+        }
+
+        const result = await api(
+          `${SCHOOL_API}/report-cards?student_id=${
+            encodeURIComponent(studentId)
+          }&term=${encodeURIComponent(term)}&year=${year}`
+        );
+
+        const output = $('reportOutput');
+        output.replaceChildren();
+
+        const heading = document.createElement('h3');
+        heading.textContent = 'Student Report Card';
+        output.appendChild(heading);
+
+        const details = document.createElement('p');
+        const student = students.find(
+          item => String(item.id) === String(studentId)
+        );
+
+        details.textContent =
+          `Student: ${student?.name || student?.full_name || 'Student'} | ` +
+          `Term: ${term} | Year: ${year}`;
+
+        output.appendChild(details);
+
+        const records = Array.isArray(result)
+          ? result
+          : result.marks || result.records || result.data || [];
+
+        if (records.length === 0) {
+          const message = document.createElement('p');
+          message.textContent =
+            'No report records were returned for this selection.';
+          output.appendChild(message);
+          return;
+        }
+
+        const table = document.createElement('table');
+        const header = table.createTHead().insertRow();
+
+        ['Subject', 'Marks', 'Grade'].forEach(text => {
+          const th = document.createElement('th');
+          th.textContent = text;
+          header.appendChild(th);
+        });
+
+        const body = table.createTBody();
+
+        records.forEach(record => {
+          const row = body.insertRow();
+
+          row.insertCell().textContent =
+            record.subject_name || record.subject || '';
+
+          row.insertCell().textContent =
+            record.marks ?? record.score ?? '';
+
+          row.insertCell().textContent =
+            record.grade || '';
+        });
+
+        output.appendChild(table);
+
+        const printButton = document.createElement('button');
+        printButton.type = 'button';
+        printButton.className = 'btn btn-primary';
+        printButton.textContent = 'Print Report Card';
+        printButton.style.marginTop = '16px';
+
+        printButton.addEventListener('click', () => {
+          window.print();
+        });
+
+        output.appendChild(printButton);
+
+      } catch (error) {
+        notice(
+          'Could not load report card: ' + error.message,
+          'error'
+        );
+      } finally {
+        button.disabled = false;
+        button.textContent = 'View Report Card';
+      }
+    });
+
+
+    // ==========================================
+    // ANNOUNCEMENTS
+    // ==========================================
+
+    $('announcementForm')?.addEventListener(
+      'submit',
+      async event => {
+        event.preventDefault();
+
+        const button = $('announcementForm').querySelector(
+          'button[type="submit"]'
+        );
+
+        button.disabled = true;
+        button.textContent = 'Publishing...';
+
+        try {
+          const id = $('announcementId').value.trim();
+
+          const record = {
+            title: $('announcementTitle').value.trim(),
+            body: $('announcementBody').value.trim()
+          };
+
+          if (!record.title || !record.body) {
+            throw new Error(
+              'Enter both the announcement title and message.'
+            );
+          }
+
+          const path = id
+            ? `${SCHOOL_API}/announcements/${encodeURIComponent(id)}`
+            : `${SCHOOL_API}/announcements`;
+
+          await api(path, {
+            method: id ? 'PUT' : 'POST',
+            body: JSON.stringify(record)
+          });
+
+          $('announcementForm').reset();
+          $('announcementId').value = '';
+
+          await loadAnnouncements();
+
+          notice('Announcement saved successfully.');
+
+        } catch (error) {
+          notice(
+            'Announcement was not saved: ' + error.message,
+            'error'
+          );
+        } finally {
+          button.disabled = false;
+          button.textContent = 'Publish Announcement';
+        }
+      }
+    );
+
+
+    async function loadAnnouncements() {
+      const result = await api(`${SCHOOL_API}/announcements`);
+
+      announcements = Array.isArray(result)
+        ? result
+        : result.announcements || result.data || [];
+
+      const container = $('announcementsList');
+      container.replaceChildren();
+
+      if (announcements.length === 0) {
+        container.textContent = 'No announcements found.';
+        return;
+      }
+
+      announcements.forEach(item => {
+        const article = document.createElement('article');
+        article.className = 'panel';
+
+        const title = document.createElement('h3');
+        title.textContent = item.title || 'Announcement';
+
+        const body = document.createElement('p');
+        body.textContent = item.body || item.message || '';
+
+        article.append(title, body);
+
+        const deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.className = 'btn btn-danger';
+        deleteButton.textContent = 'Delete';
+
+        deleteButton.addEventListener('click', async () => {
+          if (!confirm('Delete this announcement?')) return;
+
+          try {
+            await api(
+              `${SCHOOL_API}/announcements/${
+                encodeURIComponent(item.id)
+              }`,
+              { method: 'DELETE' }
+            );
+
+            await loadAnnouncements();
+            notice('Announcement deleted.');
+
+          } catch (error) {
+            notice(
+              'Could not delete announcement: ' + error.message,
+              'error'
+            );
+          }
+        });
+
+        article.appendChild(deleteButton);
+        container.appendChild(article);
+      });
+    }
+
+
+    // ==========================================
+    // WEBSITE CONTENT EDITING
+    // ==========================================
+
+    $('contentForm')?.addEventListener('submit', async event => {
+      event.preventDefault();
+
+      const button = $('contentForm').querySelector(
+        'button[type="submit"]'
+      );
+
+      button.disabled = true;
+      button.textContent = 'Saving...';
+
+      try {
+        const key = $('contentKey').value;
+        const value = $('contentValue').value.trim();
+
+        if (!key || !value) {
+          throw new Error(
+            'Select a content section and enter its text.'
+          );
+        }
+
+        await api(`${SCHOOL_API}/content`, {
+          method: 'POST',
+          body: JSON.stringify({
+            key,
+            value
+          })
+        });
+
+        notice('Website content saved successfully.');
+
+      } catch (error) {
+        notice(
+          'Website content was not saved: ' + error.message,
+          'error'
+        );
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Save Website Content';
+      }
+    });
     checkConnection();
+        // ==========================================
+    // ADMISSIONS
+    // ==========================================
+
+    async function loadAdmissions() {
+      const result = await api(`${SCHOOL_API}/admissions`);
+
+      admissions = Array.isArray(result)
+        ? result
+        : result.admissions || result.data || [];
+
+      $('totalAdmissions').textContent = admissions.length;
+
+      const table = $('admissionsTable');
+      table.replaceChildren();
+
+      if (!admissions.length) {
+        const row = table.insertRow();
+        const cell = row.insertCell();
+        cell.colSpan = 6;
+        cell.textContent = 'No admission applications found.';
+        return;
+      }
+
+      admissions.forEach(item => {
+        const row = table.insertRow();
+
+        row.insertCell().textContent =
+          item.child_name || item.name || '';
+
+        row.insertCell().textContent =
+          item.class_applied || item.class || '';
+
+        row.insertCell().textContent =
+          item.parent_name || item.guardian || '';
+
+        row.insertCell().textContent =
+          item.phone || '';
+
+        row.insertCell().textContent =
+          item.status || 'Pending';
+
+        const actions = row.insertCell();
+
+        const viewButton = document.createElement('button');
+        viewButton.type = 'button';
+        viewButton.className = 'btn btn-primary';
+        viewButton.textContent = 'View';
+
+        viewButton.addEventListener('click', () => {
+          alert(JSON.stringify(item, null, 2));
+        });
+
+        actions.appendChild(viewButton);
+      });
+    }
+
+
+    // ==========================================
+    // PARENT AND VISITOR MESSAGES
+    // ==========================================
+
+    async function loadMessages() {
+      const result = await api(`${SCHOOL_API}/messages`);
+
+      messages = Array.isArray(result)
+        ? result
+        : result.messages || result.data || [];
+
+      $('totalMessages').textContent = messages.length;
+
+      const table = $('messagesTable');
+      table.replaceChildren();
+
+      if (!messages.length) {
+        const row = table.insertRow();
+        const cell = row.insertCell();
+        cell.colSpan = 5;
+        cell.textContent = 'No messages found.';
+        return;
+      }
+
+      messages.forEach(item => {
+        const row = table.insertRow();
+
+        row.insertCell().textContent =
+          item.name || item.sender_name || '';
+
+        row.insertCell().textContent =
+          item.email || item.phone || '';
+
+        row.insertCell().textContent =
+          item.message || item.body || '';
+
+        row.insertCell().textContent =
+          item.created_at || item.date || '';
+
+        const actions = row.insertCell();
+
+        const deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.className = 'btn btn-danger';
+        deleteButton.textContent = 'Delete';
+
+        deleteButton.addEventListener('click', async () => {
+          if (!confirm('Delete this message?')) return;
+
+          try {
+            await api(
+              `${SCHOOL_API}/messages/${encodeURIComponent(item.id)}`,
+              { method: 'DELETE' }
+            );
+
+            await loadMessages();
+            notice('Message deleted.');
+
+          } catch (error) {
+            notice(
+              'Could not delete message: ' + error.message,
+              'error'
+            );
+          }
+        });
+
+        actions.appendChild(deleteButton);
+      });
+    }
+
+
+    // ==========================================
+    // PHOTO GALLERY
+    // ==========================================
+
+    async function loadGallery() {
+      const result = await api(`${SCHOOL_API}/gallery`);
+
+      gallery = Array.isArray(result)
+        ? result
+        : result.gallery || result.photos || result.data || [];
+
+      const container = $('galleryList');
+      container.replaceChildren();
+
+      if (!gallery.length) {
+        container.textContent = 'No gallery photos found.';
+        return;
+      }
+
+      gallery.forEach(photo => {
+        const card = document.createElement('div');
+        card.className = 'panel';
+
+        const image = document.createElement('img');
+
+        image.src = photo.url || photo.image_url || photo.src || '';
+        image.alt = photo.caption || 'School gallery photo';
+        image.style.width = '100%';
+        image.style.maxWidth = '320px';
+        image.style.height = 'auto';
+        image.style.borderRadius = '8px';
+
+        const caption = document.createElement('p');
+        caption.textContent = photo.caption || '';
+
+        card.append(image, caption);
+        container.appendChild(card);
+      });
+    }
+
+
+    // ==========================================
+    // UPLOAD PHOTO
+    // ==========================================
+
+    $('galleryForm')?.addEventListener('submit', async event => {
+      event.preventDefault();
+
+      const button = $('galleryForm').querySelector(
+        'button[type="submit"]'
+      );
+
+      const file = $('galleryPhoto').files[0];
+
+      if (!file) {
+        notice('Choose a photo first.', 'error');
+        return;
+      }
+
+      if (!file.type.startsWith('image/')) {
+        notice('Please choose an image file.', 'error');
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        notice('Choose an image smaller than 5 MB.', 'error');
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = 'Uploading...';
+
+      try {
+        const formData = new FormData();
+
+        formData.append('photo', file);
+        formData.append(
+          'caption',
+          $('galleryCaption').value.trim()
+        );
+
+        await api(`${SCHOOL_API}/gallery`, {
+          method: 'POST',
+          body: formData
+        });
+
+        $('galleryForm').reset();
+
+        await loadGallery();
+
+        notice('Photo uploaded successfully.');
+
+      } catch (error) {
+        notice(
+          'Photo upload failed: ' + error.message,
+          'error'
+        );
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Upload Photo';
+      }
+    });
+
+
+    // ==========================================
+    // REFRESH DASHBOARD DATA
+    // ==========================================
+
+    async function refreshExtraSections() {
+      const tasks = [
+        loadAdmissions(),
+        loadMessages(),
+        loadGallery()
+      ];
+
+      const results = await Promise.allSettled(tasks);
+
+      const failed = results.filter(
+        result => result.status === 'rejected'
+      );
+
+      if (failed.length) {
+        console.error(
+          'Some sections could not load:',
+          failed.map(result => result.reason)
+        );
+      }
+        }
   </script>
 
 </body>
