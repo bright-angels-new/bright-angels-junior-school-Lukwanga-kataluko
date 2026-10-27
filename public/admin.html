@@ -1376,6 +1376,131 @@ async function loadReports() {
         <h2>STUDENT REPORT CARD</h2>
       </header>
 
+$('#reportsList').addEventListener('click', async function(event) {
+  const button = event.target.closest('.print-report');
+  if (!button) return;
+
+  const reports = window.brightAngelsReports || [];
+  const report = reports[Number(button.dataset.index)];
+
+  if (!report) {
+    alert('Report card not found. Refresh and try again.');
+    return;
+  }
+
+  const student = studentsCache.find(
+    s => String(s.id) === String(report.student_id)
+  );
+
+  const escapeHTML = value =>
+    String(value == null ? '' : value).replace(/[&<>"']/g, char => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    })[char]);
+
+  const studentName =
+    report.full_name ||
+    report.student_name ||
+    (student && student.full_name) ||
+    'Student';
+
+  let subjectRows = '';
+
+  try {
+    const data = await api('/api/marks');
+    const allMarks = data.marks || data.records || [];
+
+    const studentMarks = allMarks.filter(m =>
+      String(m.student_id) === String(report.student_id) &&
+      String(m.academic_year) === String(report.academic_year) &&
+      String(m.term).toLowerCase() === String(report.term).toLowerCase()
+    );
+
+    if (studentMarks.length) {
+      subjectRows = studentMarks.map(m => `
+        <tr>
+          <td>${escapeHTML(m.subject_name || m.subject || m.subject_id)}</td>
+          <td>${escapeHTML(m.marks_obtained)}</td>
+          <td>${escapeHTML(m.maximum_marks)}</td>
+          <td>${escapeHTML(m.remarks || '')}</td>
+        </tr>
+      `).join('');
+    } else {
+      subjectRows = `
+        <tr>
+          <td colspan="4">No subject marks found for this term.</td>
+        </tr>
+      `;
+    }
+  } catch (error) {
+    subjectRows = `
+      <tr>
+        <td colspan="4">Subject marks could not be loaded.</td>
+      </tr>
+    `;
+  }
+
+  const printWindow = window.open('', '_blank');
+
+  if (!printWindow) {
+    alert('Allow pop-ups for this website, then try Print again.');
+    return;
+  }
+
+  printWindow.document.write(`
+    <!doctype html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Student Report Card</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 30px;
+          color: #222;
+        }
+        header {
+          text-align: center;
+          border-bottom: 2px solid #176b45;
+          padding-bottom: 12px;
+        }
+        h1 { color: #176b45; }
+        h2 { text-align: center; }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 20px;
+        }
+        th, td {
+          border: 1px solid #999;
+          padding: 9px;
+          text-align: left;
+        }
+        th { background: #edf5ef; }
+        .comments {
+          margin-top: 25px;
+          line-height: 1.8;
+        }
+        .signatures {
+          display: flex;
+          justify-content: space-between;
+          margin-top: 50px;
+        }
+        @media print {
+          body { margin: 15mm; }
+        }
+      </style>
+    </head>
+    <body>
+      <header>
+        <h1>Bright Angels Junior School</h1>
+        <p><strong>If others can, we can.</strong></p>
+        <h2>STUDENT REPORT CARD</h2>
+      </header>
+
       <p><strong>Student:</strong> ${escapeHTML(studentName)}</p>
       <p><strong>Admission number:</strong>
         ${escapeHTML(report.admission_number || (student && student.admission_number) || '')}
@@ -1386,15 +1511,31 @@ async function loadReports() {
       <p><strong>Academic year:</strong> ${escapeHTML(report.academic_year)}</p>
       <p><strong>Term:</strong> ${escapeHTML(report.term)}</p>
 
+      <h3>Subject Performance</h3>
       <table>
-        <tr><th>Report summary</th><th>Result</th></tr>
-        <tr><td>Total marks</td><td>${escapeHTML(report.total_marks)}</td></tr>
-        <tr><td>Average</td><td>${escapeHTML(
-          report.average_marks == null
-            ? ''
-            : Number(report.average_marks).toFixed(1) + '%'
-        )}</td></tr>
-        <tr><td>Grade</td><td>${escapeHTML(report.grade || '')}</td></tr>
+        <thead>
+          <tr>
+            <th>Subject</th>
+            <th>Marks Obtained</th>
+            <th>Maximum Marks</th>
+            <th>Remarks</th>
+          </tr>
+        </thead>
+        <tbody>${subjectRows}</tbody>
+      </table>
+
+      <h3>Overall Performance</h3>
+      <table>
+        <tr><th>Total Marks</th><td>${escapeHTML(report.total_marks)}</td></tr>
+        <tr>
+          <th>Average</th>
+          <td>${escapeHTML(
+            report.average_marks == null
+              ? ''
+              : Number(report.average_marks).toFixed(1) + '%'
+          )}</td>
+        </tr>
+        <tr><th>Grade</th><td>${escapeHTML(report.grade || '')}</td></tr>
       </table>
 
       <div class="comments">
